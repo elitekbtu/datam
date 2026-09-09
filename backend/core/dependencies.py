@@ -15,14 +15,14 @@ BearerCredentials = Annotated[
     HTTPAuthorizationCredentials | None, Depends(bearer_scheme)
 ]
 
-_UNAUTHORIZED_HEADERS = {"WWW-Authenticate": "Bearer"}
+UNAUTHORIZED_HEADERS = {"WWW-Authenticate": "Bearer"}
 
 
-def _unauthorized(detail: str) -> HTTPException:
+def unauthorized(detail: str) -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail=detail,
-        headers=_UNAUTHORIZED_HEADERS,
+        headers=UNAUTHORIZED_HEADERS,
     )
 
 
@@ -41,19 +41,19 @@ async def get_current_user_optional(
 
 async def get_current_user(db: DbSession, credentials: BearerCredentials) -> User:
     if credentials is None or not credentials.credentials:
-        raise _unauthorized("Not authenticated")
+        raise unauthorized("Not authenticated")
 
     if credentials.scheme.lower() != "bearer":
-        raise _unauthorized("Invalid authentication scheme")
+        raise unauthorized("Invalid authentication scheme")
 
     try:
         user_id = get_subject(credentials.credentials, TokenType.ACCESS)
     except TokenError as exc:
-        raise _unauthorized(str(exc)) from exc
+        raise unauthorized(str(exc)) from exc
 
     user = await auth_service.get_user_by_id(db, user_id)
     if user is None:
-        raise _unauthorized("User no longer exists")
+        raise unauthorized("User no longer exists")
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="This account is disabled"
@@ -73,6 +73,6 @@ def require_role(*roles: UserRole):
     return dependency
 
 
-CurrentUser = Annotated[User, Depends(get_current_user)]
 OptionalUser = Annotated[User | None, Depends(get_current_user_optional)]
+CurrentUser = Annotated[User, Depends(get_current_user)]
 CurrentAdmin = Annotated[User, Depends(require_role(UserRole.ADMIN))]

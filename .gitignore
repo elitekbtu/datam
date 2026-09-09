@@ -50,3 +50,6 @@ tmp/
 
 # Local databases
 *.sqlite3
+
+# Local database
+*.db

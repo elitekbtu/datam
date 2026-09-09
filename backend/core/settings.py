@@ -22,24 +22,24 @@ class TokenError(Exception):
     """Raised when a token is malformed, expired, or of an unexpected type."""
 
 
-def _encode_password(password: str) -> bytes:
+def encode_password(password: str) -> bytes:
     return password.encode("utf-8")[:BCRYPT_MAX_BYTES]
 
 
 def hash_password(password: str) -> str:
-    return bcrypt.hashpw(_encode_password(password), bcrypt.gensalt()).decode("utf-8")
+    return bcrypt.hashpw(encode_password(password), bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
         return bcrypt.checkpw(
-            _encode_password(plain_password), hashed_password.encode("utf-8")
+            encode_password(plain_password), hashed_password.encode("utf-8")
         )
     except ValueError:
         return False
 
 
-def _create_token(
+def create_token(
     subject: str | uuid.UUID,
     token_type: TokenType,
     expires_delta: timedelta,
@@ -63,7 +63,7 @@ def create_access_token(
     expires_delta: timedelta | None = None,
     **extra_claims: Any,
 ) -> str:
-    return _create_token(
+    return create_token(
         subject,
         TokenType.ACCESS,
         expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
@@ -76,7 +76,7 @@ def create_refresh_token(
     expires_delta: timedelta | None = None,
     **extra_claims: Any,
 ) -> str:
-    return _create_token(
+    return create_token(
         subject,
         TokenType.REFRESH,
         expires_delta or timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
