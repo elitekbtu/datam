@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
 from app.schemas.auth import RegisterRequest
-from core.settings import hash_password, verify_password
+from core.security import hash_password, verify_password
 
 
 class AuthError(Exception):

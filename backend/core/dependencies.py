@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
 from app.services import auth as auth_service
-from core.settings import TokenError, bearer_scheme, get_subject
+from core.security import TokenError, bearer_scheme, get_subject
 from database.session import get_db
 from utils.enums import TokenType, UserRole
 
