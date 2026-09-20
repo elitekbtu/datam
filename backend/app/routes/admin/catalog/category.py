@@ -15,7 +15,7 @@ from core.dependencies import DbSession, PageParams, require_admin
 
 router = APIRouter(
     prefix="/categories",
-    tags=["Admin · Catalog"],
+    tags=["Admin · Categories"],
     dependencies=[Depends(require_admin)],
 )
 

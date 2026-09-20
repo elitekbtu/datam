@@ -2,11 +2,13 @@
 
 import uuid
 
+from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.catalog import Product, ProductImage
 from app.schemas.catalog import ProductImageCreate
 from app.services.catalog.errors import ImageNotFound, InvalidImageOrder
+from app.services.catalog import storage
 from app.services.catalog.product import products
 from app.services.catalog.variant import find as find_variant
 
@@ -40,9 +42,35 @@ async def add(
     return await save(db, product)
 
 
+async def upload(
+    db: AsyncSession,
+    product: Product,
+    file: UploadFile,
+    *,
+    variant_id: uuid.UUID | None = None,
+    alt_text: str | None = None,
+    is_primary: bool = False,
+) -> Product:
+    """Store an uploaded file next to the product and hang it in the gallery."""
+    if variant_id is not None:
+        find_variant(product, variant_id)
+    url = await storage.save(file, f"products/{product.id}")
+    return await add(
+        db,
+        product,
+        ProductImageCreate(
+            url=url, variant_id=variant_id, alt_text=alt_text, is_primary=is_primary
+        ),
+    )
+
+
 async def remove(db: AsyncSession, product: Product, image_id: uuid.UUID) -> Product:
-    product.gallery.remove(find(product, image_id))
-    return await save(db, product)
+    image = find(product, image_id)
+    url = image.url
+    product.gallery.remove(image)
+    product = await save(db, product)
+    storage.discard([url])
+    return product
 
 
 async def reorder(

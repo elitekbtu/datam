@@ -12,6 +12,7 @@ from app.schemas.catalog import (
     ProductVariantUpdate,
 )
 from app.services.base import CRUDService
+from app.services.catalog import storage
 from app.services.catalog.errors import SkuAlreadyExists, VariantNotFound
 from app.services.errors import Conflict
 
@@ -46,6 +47,11 @@ class VariantService(
         if (sku := changes.get("sku")) is not None:
             changes["sku"] = sku.strip().upper()
         return await super().prepare(db, changes, instance)
+
+    async def delete(self, db: AsyncSession, instance: ProductVariant) -> None:
+        urls = [image.url for image in instance.images]
+        await super().delete(db, instance)
+        storage.discard(urls)
 
     async def add_to(
         self, db: AsyncSession, product: Product, payload: ProductVariantCreate

@@ -10,7 +10,7 @@ from app.services.catalog import categories, products
 from core.dependencies import DbSession, PageParams
 from utils.enums import ProductSort
 
-router = APIRouter(prefix="/products", tags=["Catalog"])
+router = APIRouter(prefix="/products", tags=["Catalog · Products"])
 
 SearchTerm = Annotated[
     str | None,

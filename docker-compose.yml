@@ -6,6 +6,7 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: sqlite+aiosqlite:////data/app.db
+      MEDIA_ROOT: /data/media
     volumes:
       - backend-data:/data
     expose:

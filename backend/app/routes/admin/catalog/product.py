@@ -4,25 +4,16 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, status
 
-from app.models.catalog import Product, ProductVariant
-from app.schemas.catalog import (
-    ImageOrder,
-    ProductCreate,
-    ProductImageCreate,
-    ProductPage,
-    ProductRead,
-    ProductUpdate,
-    ProductVariantCreate,
-    ProductVariantRead,
-    ProductVariantUpdate,
-)
-from app.services.catalog import gallery, products, variant, variants
+from app.models.catalog import Product
+from app.routes.admin.catalog.dependencies import TargetProduct
+from app.schemas.catalog import ProductCreate, ProductPage, ProductRead, ProductUpdate
+from app.services.catalog import products
 from core.dependencies import DbSession, PageParams, require_admin
 from utils.enums import ProductSort
 
 router = APIRouter(
     prefix="/products",
-    tags=["Admin · Catalog"],
+    tags=["Admin · Products"],
     dependencies=[Depends(require_admin)],
 )
 
@@ -76,9 +67,9 @@ async def read_product(key: str, db: DbSession) -> Product:
 
 @router.patch("/{product_id}", response_model=ProductRead, summary="Update a product")
 async def update_product(
-    product_id: uuid.UUID, payload: ProductUpdate, db: DbSession
+    product: TargetProduct, payload: ProductUpdate, db: DbSession
 ) -> Product:
-    return await products.update(db, await products.require(db, product_id), payload)
+    return await products.update(db, product, payload)
 
 
 @router.delete(
@@ -86,92 +77,5 @@ async def update_product(
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a product with its variants and photos",
 )
-async def delete_product(product_id: uuid.UUID, db: DbSession) -> None:
-    await products.delete(db, await products.require(db, product_id))
-
-
-@router.post(
-    "/{product_id}/variants",
-    response_model=ProductVariantRead,
-    status_code=status.HTTP_201_CREATED,
-    summary="Add a variant, such as one more size",
-)
-async def add_variant(
-    product_id: uuid.UUID, payload: ProductVariantCreate, db: DbSession
-) -> ProductVariant:
-    product = await products.require(db, product_id)
-    return await variants.add_to(db, product, payload)
-
-
-@router.patch(
-    "/{product_id}/variants/{variant_id}",
-    response_model=ProductVariantRead,
-    summary="Update a variant",
-)
-async def update_variant(
-    product_id: uuid.UUID,
-    variant_id: uuid.UUID,
-    payload: ProductVariantUpdate,
-    db: DbSession,
-) -> ProductVariant:
-    product = await products.require(db, product_id)
-    return await variants.update(db, variant.find(product, variant_id), payload)
-
-
-@router.delete(
-    "/{product_id}/variants/{variant_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete a variant with its photos",
-)
-async def delete_variant(
-    product_id: uuid.UUID, variant_id: uuid.UUID, db: DbSession
-) -> None:
-    product = await products.require(db, product_id)
-    await variants.delete(db, variant.find(product, variant_id))
-
-
-@router.post(
-    "/{product_id}/images",
-    response_model=ProductRead,
-    status_code=status.HTTP_201_CREATED,
-    summary="Add a photo to the product or to one of its variants",
-)
-async def add_image(
-    product_id: uuid.UUID, payload: ProductImageCreate, db: DbSession
-) -> Product:
-    return await gallery.add(db, await products.require(db, product_id), payload)
-
-
-@router.delete(
-    "/{product_id}/images/{image_id}",
-    response_model=ProductRead,
-    summary="Remove a photo",
-)
-async def remove_image(
-    product_id: uuid.UUID, image_id: uuid.UUID, db: DbSession
-) -> Product:
-    return await gallery.remove(db, await products.require(db, product_id), image_id)
-
-
-@router.put(
-    "/{product_id}/images/order",
-    response_model=ProductRead,
-    summary="Reorder one gallery",
-)
-async def reorder_images(
-    product_id: uuid.UUID, payload: ImageOrder, db: DbSession
-) -> Product:
-    product = await products.require(db, product_id)
-    return await gallery.reorder(db, product, payload.image_ids)
-
-
-@router.put(
-    "/{product_id}/images/{image_id}/primary",
-    response_model=ProductRead,
-    summary="Make a photo the main one of its gallery",
-)
-async def set_primary_image(
-    product_id: uuid.UUID, image_id: uuid.UUID, db: DbSession
-) -> Product:
-    product = await products.require(db, product_id)
-    return await gallery.set_primary(db, product, image_id)
+async def delete_product(product: TargetProduct, db: DbSession) -> None:
+    await products.delete(db, product)

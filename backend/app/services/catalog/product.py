@@ -10,6 +10,7 @@ from app.models.catalog import Product, ProductImage, ProductVariant
 from app.schemas.base import Page
 from app.schemas.catalog import ProductCreate, ProductRead, ProductUpdate
 from app.services.base import DEFAULT_PAGE_SIZE, CRUDService
+from app.services.catalog import storage
 from app.services.catalog.category import categories
 from app.services.catalog.errors import SkuAlreadyExists, SlugAlreadyExists
 from app.services.catalog.variant import variants
@@ -95,6 +96,11 @@ class ProductService(CRUDService[Product, ProductRead, ProductCreate, ProductUpd
             ProductVariant.is_active.is_(True),
             *conditions,
         )
+
+    async def delete(self, db: AsyncSession, instance: Product) -> None:
+        urls = [image.url for image in instance.gallery]
+        await super().delete(db, instance)
+        storage.discard(urls)
 
     async def search(
         self,

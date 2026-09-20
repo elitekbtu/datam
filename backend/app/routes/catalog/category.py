@@ -7,7 +7,7 @@ from app.schemas.catalog import CategoryPage, CategoryRead
 from app.services.catalog import categories
 from core.dependencies import DbSession, PageParams
 
-router = APIRouter(prefix="/categories", tags=["Catalog"])
+router = APIRouter(prefix="/categories", tags=["Catalog · Categories"])
 
 SearchTerm = Annotated[
     str | None, Query(max_length=128, description="Matches name, slug, or description")

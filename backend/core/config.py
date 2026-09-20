@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     DATABASE_URL: str = f"sqlite+aiosqlite:///{BASE_DIR / 'app.db'}"
     DB_ECHO: bool = False
 
+    MEDIA_ROOT: Path = BASE_DIR / "media"
+    MEDIA_URL: str = "/media"
+    MAX_UPLOAD_BYTES: int = 5 * 1024 * 1024
+
     SECRET_KEY: str = "dev-secret-change-me"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30

@@ -146,7 +146,6 @@ class ProductVariant(Base, TimestampMixin):
     options: Mapped[dict[str, str]] = mapped_column(
         JSON, default=dict, server_default="{}", nullable=False
     )
-    #: Overrides the product price when set.
     price: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
     stock: Mapped[int] = mapped_column(
         Integer, default=0, server_default="0", nullable=False

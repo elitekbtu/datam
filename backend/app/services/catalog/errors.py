@@ -23,3 +23,11 @@ class ImageNotFound(NotFound):
 
 class InvalidImageOrder(InvalidRequest):
     pass
+
+
+class UnsupportedImageType(InvalidRequest):
+    pass
+
+
+class ImageTooLarge(InvalidRequest):
+    pass
