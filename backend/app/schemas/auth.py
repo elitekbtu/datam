@@ -1,18 +1,19 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel
 
-from app.schemas.user import UserBase, UserRead
-
-
-class RegisterRequest(UserBase):
-    password: str = Field(..., min_length=8, max_length=72, examples=["s3cret-pass"])
+from app.schemas.base import WriteSchema
+from app.schemas.user import Email, Password, UserCreate, UserRead
 
 
-class LoginRequest(BaseModel):
-    email: EmailStr = Field(..., examples=["user@example.com"])
-    password: str = Field(..., min_length=1, max_length=72, examples=["s3cret-pass"])
+class RegisterRequest(UserCreate):
+    """Self-service signup; an administrator uses `AdminUserCreate` instead."""
 
 
-class RefreshRequest(BaseModel):
+class LoginRequest(WriteSchema):
+    email: Email
+    password: Password
+
+
+class RefreshRequest(WriteSchema):
     refresh_token: str
 
 

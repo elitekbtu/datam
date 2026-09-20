@@ -1,3 +1,3 @@
-from app.services import auth
+from app.services import auth, base, errors, user
 
-__all__ = ["auth"]
+__all__ = ["auth", "base", "errors", "user"]
