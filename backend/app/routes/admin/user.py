@@ -12,7 +12,7 @@ from utils.enums import UserRole
 
 router = APIRouter(
     prefix="/users",
-    tags=["admin:users"],
+    tags=["Admin · Users"],
     dependencies=[Depends(require_admin)],
 )
 

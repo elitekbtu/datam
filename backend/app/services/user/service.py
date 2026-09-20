@@ -7,6 +7,7 @@ from app.models.user import User
 from app.schemas.base import Page
 from app.schemas.user import UserCreate, UserRead, UserUpdate
 from app.services.base import DEFAULT_PAGE_SIZE, CRUDService
+from app.services.errors import Conflict
 from app.services.user.errors import EmailAlreadyExists, UsernameAlreadyExists
 from core.security import hash_password
 from utils.enums import UserRole
@@ -18,8 +19,14 @@ class UserService(CRUDService[User, UserRead, UserCreate, UserUpdate]):
     model = User
     read_schema = UserRead
     nullable_fields = frozenset({"full_name"})
+    unique_fields = ("email", "username")
     order_by = (User.created_at.desc(), User.id)
     not_found_message = "User not found"
+
+    def conflict(self, field: str) -> Conflict:
+        if field == "email":
+            return EmailAlreadyExists("An account with this email already exists")
+        return UsernameAlreadyExists("This username is already taken")
 
     async def prepare(
         self,
@@ -33,37 +40,7 @@ class UserService(CRUDService[User, UserRead, UserCreate, UserUpdate]):
             changes["username"] = username.strip()
         if (password := changes.pop("password", None)) is not None:
             changes["hashed_password"] = hash_password(password)
-        await self.ensure_identity_free(db, changes, instance)
-        return changes
-
-    async def ensure_identity_free(
-        self,
-        db: AsyncSession,
-        changes: dict[str, Any],
-        instance: User | None = None,
-    ) -> None:
-        """Reject an email or username another account already holds."""
-        email = changes.get("email")
-        username = changes.get("username")
-
-        conditions = []
-        if email is not None:
-            conditions.append(func.lower(User.email) == email)
-        if username is not None:
-            conditions.append(func.lower(User.username) == username.lower())
-        if not conditions:
-            return
-
-        stmt = select(User).where(or_(*conditions))
-        if instance is not None:
-            stmt = stmt.where(User.id != instance.id)
-
-        taken = await db.scalar(stmt)
-        if taken is None:
-            return
-        if email is not None and taken.email.lower() == email:
-            raise EmailAlreadyExists("An account with this email already exists")
-        raise UsernameAlreadyExists("This username is already taken")
+        return await super().prepare(db, changes, instance)
 
     async def by_email(self, db: AsyncSession, email: str) -> User | None:
         stmt = select(User).where(func.lower(User.email) == email.strip().lower())

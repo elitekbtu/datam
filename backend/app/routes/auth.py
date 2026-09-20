@@ -15,7 +15,7 @@ from core.config import settings
 from core.dependencies import DbSession
 from core.security import create_token_pair
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 def token_pair(user: User) -> TokenPair:
