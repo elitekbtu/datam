@@ -26,6 +26,6 @@ register_error_handlers(app)
 app.include_router(api_router, prefix=settings.API_PREFIX)
 
 
-@app.get("/health", tags=["health"])
+@app.get("/health", tags=["Health"])
 async def health() -> dict[str, str]:
     return {"status": "ok"}
