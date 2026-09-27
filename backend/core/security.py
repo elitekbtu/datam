@@ -4,19 +4,11 @@ from typing import Any, Final
 
 import bcrypt
 import jwt
-from fastapi.security import HTTPBearer
 
 from core.config import settings
 from utils.enums import TokenType
 
 BCRYPT_MAX_BYTES: Final = 72
-
-bearer_scheme = HTTPBearer(
-    scheme_name="Bearer",
-    description="JWT access token issued by `/api/auth/login`.",
-    auto_error=False,
-)
-
 
 class TokenError(Exception):
     """Raised when a token is malformed, expired, or of an unexpected type."""

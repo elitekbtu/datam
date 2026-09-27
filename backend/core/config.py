@@ -32,10 +32,9 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    COOKIE_SECURE: bool = False
 
-    CORS_ORIGINS: Annotated[list[str], NoDecode] = [
-        "http://localhost:5173"
-    ]
+    CORS_ORIGINS: Annotated[list[str], NoDecode] = []
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod

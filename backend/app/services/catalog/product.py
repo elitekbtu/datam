@@ -15,7 +15,7 @@ from app.services.catalog.category import categories
 from app.services.catalog.errors import SkuAlreadyExists, SlugAlreadyExists
 from app.services.catalog.variant import variants
 from app.services.errors import Conflict
-from utils.enums import ProductSort
+from utils.enums import Audience, ProductSort
 
 SORT_ORDERS: Final = {
     ProductSort.NEWEST: (Product.created_at.desc(), Product.id),
@@ -108,6 +108,8 @@ class ProductService(CRUDService[Product, ProductRead, ProductCreate, ProductUpd
         *,
         term: str | None = None,
         category_id: uuid.UUID | None = None,
+        category_ids: list[uuid.UUID] | None = None,
+        audience: Audience | None = None,
         is_active: bool | None = None,
         min_price: Decimal | None = None,
         max_price: Decimal | None = None,
@@ -133,6 +135,10 @@ class ProductService(CRUDService[Product, ProductRead, ProductCreate, ProductUpd
             )
         if category_id is not None:
             conditions.append(Product.category_id == category_id)
+        if category_ids is not None:
+            conditions.append(Product.category_id.in_(category_ids))
+        if audience is not None:
+            conditions.append(Product.audience.in_([audience, Audience.UNISEX]))
         if is_active is not None:
             conditions.append(Product.is_active.is_(is_active))
         if min_price is not None:

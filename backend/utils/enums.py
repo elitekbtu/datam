@@ -18,6 +18,12 @@ class Currency(StrEnum):
     RUB = "RUB"
 
 
+class Audience(StrEnum):
+    WOMEN = "women"
+    MEN = "men"
+    UNISEX = "unisex"
+
+
 class ProductSort(StrEnum):
     NEWEST = "newest"
     OLDEST = "oldest"

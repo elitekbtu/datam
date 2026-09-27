@@ -23,4 +23,4 @@ USER app
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "alembic -c database/alembic.ini upgrade head && exec uvicorn main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "alembic -c database/alembic.ini upgrade head && if [ \"$SEED_DEMO_CATALOG\" = \"true\" ]; then python seed.py; fi && exec uvicorn main:app --host 0.0.0.0 --port 8000"]

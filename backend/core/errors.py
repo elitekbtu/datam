@@ -12,8 +12,6 @@ from app.services.errors import (
     Unauthenticated,
 )
 
-UNAUTHORIZED_HEADERS: Final = {"WWW-Authenticate": "Bearer"}
-
 #: Checked in order, so a subclass may sit above the family it belongs to.
 ERROR_STATUS: Final[tuple[tuple[type[ServiceError], int], ...]] = (
     (NotFound, status.HTTP_404_NOT_FOUND),
@@ -31,11 +29,6 @@ def http_error(exc: ServiceError) -> HTTPException:
             return HTTPException(
                 status_code,
                 str(exc),
-                headers=(
-                    UNAUTHORIZED_HEADERS
-                    if status_code == status.HTTP_401_UNAUTHORIZED
-                    else None
-                ),
             )
     return HTTPException(status.HTTP_400_BAD_REQUEST, str(exc))
 

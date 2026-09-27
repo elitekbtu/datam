@@ -17,7 +17,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.base import Base, TimestampMixin
-from utils.enums import Currency
+from utils.enums import Audience, Currency
 
 
 class Category(Base, TimestampMixin):
@@ -34,6 +34,9 @@ class Category(Base, TimestampMixin):
     )
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    parent_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid(as_uuid=True), ForeignKey("categories.id", ondelete="RESTRICT"), nullable=True
+    )
 
     def __repr__(self) -> str:
         return f"<Category id={self.id} slug={self.slug!r}>"
@@ -84,6 +87,11 @@ class Product(Base, TimestampMixin):
         nullable=False,
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    audience: Mapped[Audience] = mapped_column(
+        Enum(Audience, name="audience", native_enum=False,
+             values_callable=lambda enum: [member.value for member in enum]),
+        default=Audience.UNISEX, server_default=Audience.UNISEX.value, nullable=False,
+    )
 
     category: Mapped[Category] = relationship(lazy="joined")
     variants: Mapped[list["ProductVariant"]] = relationship(

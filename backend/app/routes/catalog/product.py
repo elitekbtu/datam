@@ -8,7 +8,7 @@ from app.models.catalog import Product
 from app.schemas.catalog import ProductPage, ProductRead
 from app.services.catalog import categories, products
 from core.dependencies import DbSession, PageParams
-from utils.enums import ProductSort
+from utils.enums import Audience, ProductSort
 
 router = APIRouter(prefix="/products", tags=["Catalog · Products"])
 
@@ -28,19 +28,22 @@ async def list_products(
     page: PageParams,
     search: SearchTerm = None,
     category: CategoryKey = None,
+    audience: Audience | None = None,
     min_price: PriceBound = None,
     max_price: PriceBound = None,
     in_stock: bool | None = None,
     sort: ProductSort = ProductSort.NEWEST,
 ) -> ProductPage:
-    category_id: uuid.UUID | None = None
+    category_ids: list[uuid.UUID] | None = None
     if category:
         category_id = (await categories.by_key(db, category, active_only=True)).id
+        category_ids = await categories.descendant_ids(db, category_id)
 
     return await products.search(
         db,
         term=search,
-        category_id=category_id,
+        category_ids=category_ids,
+        audience=audience,
         is_active=True,
         min_price=min_price,
         max_price=max_price,

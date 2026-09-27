@@ -6,7 +6,7 @@ from typing import Annotated
 from pydantic import BaseModel, Field
 
 from app.schemas.base import Page, ReadSchema, WriteSchema
-from utils.enums import Currency
+from utils.enums import Audience, Currency
 
 CategoryName = Annotated[str, Field(min_length=2, max_length=128)]
 ProductName = Annotated[str, Field(min_length=2, max_length=200)]
@@ -47,6 +47,7 @@ class CategoryBase(BaseModel):
 class CategoryRead(CategoryBase, ReadSchema):
     id: uuid.UUID
     slug: str
+    parent_id: uuid.UUID | None
     is_active: bool
     created_at: datetime
     updated_at: datetime
@@ -57,6 +58,7 @@ class CategoryCreate(CategoryBase, WriteSchema):
         default=None, description="Derived from the name when omitted"
     )
     is_active: bool = True
+    parent_id: uuid.UUID | None = None
 
 
 class CategoryUpdate(WriteSchema):
@@ -64,6 +66,7 @@ class CategoryUpdate(WriteSchema):
     slug: Slug | None = None
     description: str | None = None
     is_active: bool | None = None
+    parent_id: uuid.UUID | None = None
 
 
 class ProductImageBase(BaseModel):
@@ -140,6 +143,7 @@ class ProductBase(BaseModel):
     currency: Currency = Currency.KZT
     sku: Sku
     stock: Stock = 0
+    audience: Audience = Audience.UNISEX
 
 
 class ProductRead(ProductBase, ReadSchema):
@@ -174,6 +178,7 @@ class ProductUpdate(WriteSchema):
     category_id: uuid.UUID | None = None
     slug: Slug | None = None
     is_active: bool | None = None
+    audience: Audience | None = None
 
 
 CategoryPage = Page[CategoryRead]

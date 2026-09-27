@@ -7,6 +7,9 @@ services:
     environment:
       DATABASE_URL: sqlite+aiosqlite:////data/app.db
       MEDIA_ROOT: /data/media
+      SEED_DEMO_CATALOG: "true"
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      CORS_ORIGINS: ""
     volumes:
       - backend-data:/data
     expose:
