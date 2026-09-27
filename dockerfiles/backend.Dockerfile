@@ -5,8 +5,7 @@ ENV UV_COMPILE_BYTECODE=1 \
     UV_PROJECT_ENVIRONMENT=/opt/venv \
     PATH="/opt/venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    DATABASE_URL=sqlite+aiosqlite:////data/app.db
+    PYTHONDONTWRITEBYTECODE=1
 
 WORKDIR /app
 
@@ -23,4 +22,4 @@ USER app
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "alembic -c database/alembic.ini upgrade head && if [ \"$SEED_DEMO_CATALOG\" = \"true\" ]; then python seed.py; fi && exec uvicorn main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "alembic -c database/alembic.ini upgrade head && exec uvicorn main:app --host 0.0.0.0 --port 8000"]

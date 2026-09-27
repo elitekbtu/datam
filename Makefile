@@ -2,7 +2,7 @@ COMPOSE := docker compose
 PRUNE := \( -name .git -o -name node_modules -o -name .venv \) -prune -o
 
 .DEFAULT_GOAL := help
-.PHONY: help build up down reset restart logs ps shell migrate clean
+.PHONY: help build up down reset restart logs ps shell migrate seed clean
 
 help:
 	@echo "make build    build both images"
@@ -14,6 +14,7 @@ help:
 	@echo "make ps       show service status"
 	@echo "make shell    open a shell in the backend container"
 	@echo "make migrate  run alembic upgrade head in the backend container"
+	@echo "make seed     seed the current backend database"
 	@echo "make clean    remove python and tooling cache files"
 
 build:
@@ -42,6 +43,9 @@ shell:
 
 migrate:
 	$(COMPOSE) exec backend alembic -c database/alembic.ini upgrade head
+
+seed:
+	$(COMPOSE) exec backend python seed.py
 
 clean:
 	@find . $(PRUNE) -type d \( -name __pycache__ -o -name .pytest_cache -o -name .mypy_cache -o -name .ruff_cache \) -exec rm -rf {} +

@@ -19,9 +19,6 @@ config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 target_metadata = Base.metadata
 
-IS_SQLITE = settings.DATABASE_URL.startswith("sqlite")
-
-
 def run_migrations_offline() -> None:
     context.configure(
         url=settings.sync_database_url,
@@ -30,7 +27,6 @@ def run_migrations_offline() -> None:
         dialect_opts={"paramstyle": "named"},
         compare_type=True,
         compare_server_default=True,
-        render_as_batch=IS_SQLITE,
     )
 
     with context.begin_transaction():
@@ -43,7 +39,6 @@ def do_run_migrations(connection: Connection) -> None:
         target_metadata=target_metadata,
         compare_type=True,
         compare_server_default=True,
-        render_as_batch=IS_SQLITE,
     )
 
     with context.begin_transaction():

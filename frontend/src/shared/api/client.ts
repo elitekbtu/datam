@@ -19,12 +19,12 @@ async function ensureCsrf(): Promise<string> {
 async function send<T>(path: string, options: Options, canRefresh: boolean): Promise<T> {
   const method = options.method?.toUpperCase() ?? 'GET'
   const headers = new Headers(options.headers)
-  if (options.body !== undefined) headers.set('Content-Type', 'application/json')
+  if (options.body !== undefined && !(options.body instanceof FormData)) headers.set('Content-Type', 'application/json')
   if (!['GET', 'HEAD'].includes(method)) headers.set('X-CSRF-Token', await ensureCsrf())
   const response = await fetch(`/api${path}`, {
     ...options,
     method,
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    body: options.body === undefined ? undefined : options.body instanceof FormData ? options.body : JSON.stringify(options.body),
     credentials: 'include',
     headers,
   })

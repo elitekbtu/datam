@@ -7,9 +7,15 @@ import uuid
 from pathlib import Path
 
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy.engine import make_url
 
 temporary = tempfile.TemporaryDirectory(prefix="datam-test-")
-os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{Path(temporary.name) / 'store.db'}"
+test_database_url = os.environ.get("TEST_DATABASE_URL")
+if test_database_url is not None:
+    parsed_url = make_url(test_database_url)
+    if parsed_url.drivername != "postgresql+asyncpg" or not (parsed_url.database or "").endswith("_test"):
+        raise RuntimeError("TEST_DATABASE_URL must point to a PostgreSQL database ending in _test")
+os.environ["DATABASE_URL"] = test_database_url or "postgresql+asyncpg://invalid:invalid@127.0.0.1/datam_test"
 os.environ["MEDIA_ROOT"] = str(Path(temporary.name) / "media")
 os.environ["DEBUG"] = "false"
 os.environ["COOKIE_SECURE"] = "false"
@@ -22,9 +28,11 @@ from main import app  # noqa: E402
 from seed import main as seed_demo  # noqa: E402
 
 
+@unittest.skipUnless(test_database_url, "Set TEST_DATABASE_URL to a disposable PostgreSQL database")
 class StorefrontFlow(unittest.IsolatedAsyncioTestCase):
     async def test_customer_flow(self) -> None:
         async with engine.begin() as connection:
+            await connection.run_sync(Base.metadata.drop_all)
             await connection.run_sync(Base.metadata.create_all)
         await seed_demo()
         async with AsyncClient(

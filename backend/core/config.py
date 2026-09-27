@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     API_PREFIX: str = "/api"
     DEBUG: bool = False
 
-    DATABASE_URL: str = f"sqlite+aiosqlite:///{BASE_DIR / 'app.db'}"
+    DATABASE_URL: str
     DB_ECHO: bool = False
 
     MEDIA_ROOT: Path = BASE_DIR / "media"
@@ -45,7 +45,7 @@ class Settings(BaseSettings):
 
     @property
     def sync_database_url(self) -> str:
-        return self.DATABASE_URL.replace("+aiosqlite", "")
+        return self.DATABASE_URL.replace("+asyncpg", "")
 
     @property
     def access_token_expire_seconds(self) -> int:

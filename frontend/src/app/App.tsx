@@ -16,6 +16,12 @@ const AccountLayout = lazy(() => import('../pages/account').then((module) => ({ 
 const AccountPage = lazy(() => import('../pages/account').then((module) => ({ default: module.AccountPage })))
 const OrdersPage = lazy(() => import('../pages/orders').then((module) => ({ default: module.OrdersPage })))
 const OrderDetailsPage = lazy(() => import('../pages/orders').then((module) => ({ default: module.OrderDetailsPage })))
+const AdminLayout = lazy(() => import('../pages/admin').then((module) => ({ default: module.AdminLayout })))
+const AdminOverviewPage = lazy(() => import('../pages/admin').then((module) => ({ default: module.AdminOverviewPage })))
+const AdminProductsPage = lazy(() => import('../pages/admin').then((module) => ({ default: module.AdminProductsPage })))
+const AdminProductPage = lazy(() => import('../pages/admin').then((module) => ({ default: module.AdminProductPage })))
+const AdminCategoriesPage = lazy(() => import('../pages/admin').then((module) => ({ default: module.AdminCategoriesPage })))
+const AdminUsersPage = lazy(() => import('../pages/admin').then((module) => ({ default: module.AdminUsersPage })))
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -30,5 +36,5 @@ function Shell() {
 const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: 60_000, refetchOnWindowFocus: false } } })
 
 export default function App() {
-  return <QueryClientProvider client={queryClient}><BrowserRouter><Suspense fallback={<Loading />}><Routes><Route element={<Shell />}><Route index element={<HomePage />} /><Route path="catalog" element={<CatalogPage />} /><Route path="products/:slug" element={<ProductPage />} /><Route path="favorites" element={<FavoritesPage />} /><Route path="cart" element={<CartPage />} /><Route path="checkout" element={<CheckoutPage />} /><Route path="login" element={<AuthPage />} /><Route path="register" element={<AuthPage />} /><Route path="orders/:id/confirmed" element={<OrderDetailsPage confirmed />} /><Route path="account" element={<AccountLayout />}><Route index element={<AccountPage />} /><Route path="orders" element={<OrdersPage />} /><Route path="orders/:id" element={<OrderDetailsPage />} /></Route><Route path="*" element={<div className="page-container py-24 text-center"><h1 className="display-title">Страница не найдена</h1><Link to="/" className="mt-8 inline-block text-sm underline underline-offset-4">На главную</Link></div>} /></Route></Routes></Suspense></BrowserRouter></QueryClientProvider>
+  return <QueryClientProvider client={queryClient}><BrowserRouter><Suspense fallback={<Loading />}><Routes><Route element={<Shell />}><Route index element={<HomePage />} /><Route path="catalog" element={<CatalogPage />} /><Route path="products/:slug" element={<ProductPage />} /><Route path="favorites" element={<FavoritesPage />} /><Route path="cart" element={<CartPage />} /><Route path="checkout" element={<CheckoutPage />} /><Route path="login" element={<AuthPage />} /><Route path="register" element={<AuthPage />} /><Route path="orders/:id/confirmed" element={<OrderDetailsPage confirmed />} /><Route path="account" element={<AccountLayout />}><Route index element={<AccountPage />} /><Route path="orders" element={<OrdersPage />} /><Route path="orders/:id" element={<OrderDetailsPage />} /></Route><Route path="admin" element={<AdminLayout />}><Route index element={<AdminOverviewPage />} /><Route path="products" element={<AdminProductsPage />} /><Route path="products/:id" element={<AdminProductPage />} /><Route path="categories" element={<AdminCategoriesPage />} /><Route path="users" element={<AdminUsersPage />} /></Route><Route path="*" element={<div className="page-container py-24 text-center"><h1 className="display-title">Страница не найдена</h1><Link to="/" className="mt-8 inline-block text-sm underline underline-offset-4">На главную</Link></div>} /></Route></Routes></Suspense></BrowserRouter></QueryClientProvider>
 }
