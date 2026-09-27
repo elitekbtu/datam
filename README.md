@@ -18,6 +18,7 @@ The store uses the dedicated `datam` database in PostgreSQL, persisted in `postg
 - `frontend/src`: Feature Sliced Design layers (`app`, `pages`, `widgets`, `features`, `entities`, `shared`). All customer API calls use same-origin `/api` requests with cookies.
 - `backend/app/routes/commerce`: cart, favorites, and order routes.
 - `backend/app/services/commerce`: corresponding business logic, including guest merge and stock checked order creation.
+- `backend/app/routes/admin`: catalog, user, and order administration. Orders support listing, filtering, delivery edits, and status changes; cancelling an unshipped order restores available stock.
 - `backend/seed.py`: demo categories, products, variants, and image references.
 
 ## Checks

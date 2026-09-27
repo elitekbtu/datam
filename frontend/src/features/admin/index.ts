@@ -1,2 +1,2 @@
 export { adminApi } from './api/adminApi'
-export type { CategoryInput, ProductInput, UserInput, VariantInput } from './model/types'
+export type { AdminOrder, CategoryInput, OrderDeliveryInput, OrderStatus, ProductInput, UserInput, VariantInput } from './model/types'

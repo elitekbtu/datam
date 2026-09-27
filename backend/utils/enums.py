@@ -11,6 +11,14 @@ class UserRole(StrEnum):
     ADMIN = "admin"
 
 
+class OrderStatus(StrEnum):
+    PLACED = "placed"
+    PROCESSING = "processing"
+    SHIPPED = "shipped"
+    DELIVERED = "delivered"
+    CANCELLED = "cancelled"
+
+
 class Currency(StrEnum):
     KZT = "KZT"
     USD = "USD"

@@ -1,2 +1,3 @@
 export { orderApi } from './api/orderApi'
-export type { Order, OrderItem, OrderPayload } from './model/types'
+export { orderStatusLabels } from './model/status'
+export type { Order, OrderItem, OrderPayload, OrderStatus } from './model/types'

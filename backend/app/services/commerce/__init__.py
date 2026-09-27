@@ -1,3 +1,3 @@
-from . import cart, favorites, guest, orders
+from . import admin_orders, cart, favorites, guest, orders
 
-__all__ = ["cart", "favorites", "guest", "orders"]
+__all__ = ["admin_orders", "cart", "favorites", "guest", "orders"]

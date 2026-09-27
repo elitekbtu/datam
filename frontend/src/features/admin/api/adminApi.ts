@@ -1,5 +1,5 @@
 import { api } from '../../../shared/api/client'
-import type { Category, CategoryInput, Page, Product, ProductInput, ProductVariant, User, UserInput, VariantInput } from '../model/types'
+import type { AdminOrder, Category, CategoryInput, OrderDeliveryInput, OrderStatus, Page, Product, ProductInput, ProductVariant, User, UserInput, VariantInput } from '../model/types'
 
 const admin = '/admin'
 const catalog = `${admin}/catalog`
@@ -23,6 +23,10 @@ export const adminApi = {
   deleteImage: (id: string, imageId: string) => api<Product>(`${productPath(id)}/images/${imageId}`, { method: 'DELETE' }),
   primaryImage: (id: string, imageId: string) => api<Product>(`${productPath(id)}/images/${imageId}/primary`, { method: 'PUT' }),
   orderImages: (id: string, image_ids: string[]) => api<Product>(`${productPath(id)}/images/order`, { method: 'PUT', body: { image_ids } }),
+  orders: (params: URLSearchParams) => api<Page<AdminOrder>>(`${admin}/orders?${params}`),
+  order: (id: string) => api<AdminOrder>(`${admin}/orders/${encodeURIComponent(id)}`),
+  updateOrderDelivery: (id: string, body: OrderDeliveryInput) => api<AdminOrder>(`${admin}/orders/${encodeURIComponent(id)}`, { method: 'PATCH', body }),
+  updateOrderStatus: (id: string, status: OrderStatus) => api<AdminOrder>(`${admin}/orders/${encodeURIComponent(id)}/status`, { method: 'PATCH', body: { status } }),
   users: (params: URLSearchParams) => api<Page<User>>(`${admin}/users?${params}`),
   createUser: (body: UserInput & { password: string }) => api<User>(`${admin}/users`, { method: 'POST', body }),
   updateUser: (id: string, body: Partial<UserInput> & { password?: string }) => api<User>(`${admin}/users/${id}`, { method: 'PATCH', body }),

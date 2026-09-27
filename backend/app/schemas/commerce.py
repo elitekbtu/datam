@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from app.schemas.catalog import ProductRead
 from app.schemas.base import ReadSchema, WriteSchema
+from utils.enums import OrderStatus
 
 
 class CartItemWrite(WriteSchema):
@@ -70,7 +71,7 @@ class OrderItemRead(ReadSchema):
 
 class OrderRead(ReadSchema):
     id: uuid.UUID
-    status: str
+    status: OrderStatus
     full_name: str
     phone: str
     city: str
@@ -89,3 +90,27 @@ class OrderPage(BaseModel):
     total: int
     limit: int
     offset: int
+
+
+class AdminOrderRead(OrderRead):
+    user_id: uuid.UUID
+
+
+class AdminOrderPage(BaseModel):
+    items: list[AdminOrderRead]
+    total: int
+    limit: int
+    offset: int
+
+
+class OrderStatusUpdate(WriteSchema):
+    status: OrderStatus
+
+
+class OrderDeliveryUpdate(WriteSchema):
+    full_name: Annotated[str, Field(min_length=2, max_length=128)] | None = None
+    phone: Annotated[str, Field(min_length=7, max_length=32)] | None = None
+    city: Annotated[str, Field(min_length=2, max_length=128)] | None = None
+    address: Annotated[str, Field(min_length=5, max_length=255)] | None = None
+    postal_code: Annotated[str | None, Field(max_length=16)] = None
+    note: Annotated[str | None, Field(max_length=1000)] = None
