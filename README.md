@@ -1,26 +1,76 @@
-# DATAM storefront
+# DATAM
 
-Russian-language fashion storefront. The frontend is served by Nginx at `http://localhost`; Compose publishes port 80 on localhost only. Nginx forwards `/api` and `/media` to FastAPI and `/pgadmin` to pgAdmin. PostgreSQL and pgAdmin are available only inside the Compose network.
+Интернет-магазин одежды с личным кабинетом и админкой. Фронтенд написан на React и Vite, API — на FastAPI, данные хранятся в PostgreSQL. Весь проект запускается через Docker Compose.
 
-## Run
+| Сервис | Адрес |
+| --- | --- |
+| Магазин | [localhost](http://localhost) |
+| Админка | [localhost/admin](http://localhost/admin) |
+| pgAdmin | [localhost/pgadmin](http://localhost/pgadmin) |
+| Документация API | [localhost/docs](http://localhost/docs) |
 
-1. Copy `.env.example` to `.env` if you do not already have an environment file. Set long random values for `SECRET_KEY`, `POSTGRES_PASSWORD`, and `PGADMIN_DEFAULT_PASSWORD`. Use a URL-safe PostgreSQL password because Compose embeds it in the backend database URL.
-2. Run `make up`.
-3. Run `make seed` to populate the current PostgreSQL database.
-4. Open `http://localhost` for the store, `http://localhost/admin` for the administrator interface, and `http://localhost/pgadmin` for pgAdmin.
+## Быстрый запуск
 
-Sign in to pgAdmin with `PGADMIN_DEFAULT_EMAIL` and `PGADMIN_DEFAULT_PASSWORD`. The DATAM PostgreSQL server is preconfigured there; enter `POSTGRES_PASSWORD` when connecting to it. On a fresh database, register an account in the store, then grant it admin access in pgAdmin's Query Tool with `UPDATE users SET role = 'admin' WHERE email = 'your@email.com';`. Sign in to `/admin` with that account. The backend applies Alembic migrations on startup. `make seed` is idempotent and runs only when requested. Set `COOKIE_SECURE=true` when serving the site over HTTPS.
+Нужны Docker Compose и `make`.
 
-The store uses the dedicated `datam` database in PostgreSQL, persisted in `postgres-data`. pgAdmin keeps its own settings in `pgadmin-data`. Existing data from earlier storage is not imported automatically. `make reset` removes all Compose volumes.
+```bash
+cp .env.example .env
+```
 
-## Code layout
+В `.env` задайте свои значения для `SECRET_KEY`, `POSTGRES_PASSWORD` и `PGADMIN_DEFAULT_PASSWORD`. Для ключа и пароля PostgreSQL подойдут длинные случайные hex-строки: `openssl rand -hex 32`. Пароль PostgreSQL должен быть безопасным для URL, поскольку Compose вставляет его в `DATABASE_URL`.
 
-- `frontend/src`: Feature Sliced Design layers (`app`, `pages`, `widgets`, `features`, `entities`, `shared`). All customer API calls use same-origin `/api` requests with cookies.
-- `backend/app/routes/commerce`: cart, favorites, and order routes.
-- `backend/app/services/commerce`: corresponding business logic, including guest merge and stock checked order creation.
-- `backend/app/routes/admin`: catalog, user, and order administration. Orders support listing, filtering, delivery edits, and status changes; cancelling an unshipped order restores available stock.
-- `backend/seed.py`: demo categories, products, variants, and image references.
+```bash
+make up
+make seed
+```
 
-## Checks
+`make up` собирает и запускает контейнеры; миграции применяются при старте backend. `make seed` добавляет демо-каталог в текущую базу `datam`. Команда идемпотентна: повторный запуск не создаёт дубликаты. Автоматического seed при запуске нет.
 
-Run `npm run lint` and `npm run build` in `frontend/`. The backend flow test requires `TEST_DATABASE_URL` pointing to a disposable PostgreSQL database whose name ends in `_test`.
+## Доступ к админке
+
+На новой базе сначала зарегистрируйте пользователя в магазине. Затем откройте pgAdmin и выполните в Query Tool для базы `datam`:
+
+```sql
+UPDATE users SET role = 'admin' WHERE email = 'you@example.com';
+```
+
+Подставьте email зарегистрированного пользователя и войдите под ним на [localhost/admin](http://localhost/admin). В админке доступны товары, категории, пользователи и заказы. Заказы можно искать, фильтровать, менять их статус и редактировать данные доставки до отправки. Отмена до отправки возвращает товары на склад.
+
+Для входа в pgAdmin используйте `PGADMIN_DEFAULT_EMAIL` и `PGADMIN_DEFAULT_PASSWORD` из `.env`. Сервер DATAM уже добавлен; при подключении к нему введите `POSTGRES_PASSWORD`.
+
+## Команды
+
+| Команда | Что делает |
+| --- | --- |
+| `make up` | Собирает и запускает проект |
+| `make down` | Останавливает контейнеры, сохраняя данные |
+| `make restart` | Перезапускает сервисы |
+| `make ps` | Показывает состояние контейнеров |
+| `make logs` | Открывает логи |
+| `make shell` | Открывает shell в backend |
+| `make migrate` | Применяет миграции вручную |
+| `make seed` | Добавляет демо-каталог в текущую базу |
+| `make build` | Пересобирает образы |
+| `make clean` | Удаляет локальные кеши Python и инструментов |
+| `make reset` | Удаляет контейнеры и **все тома проекта**, включая базу данных |
+
+Полный список: `make help`.
+
+## Как устроен проект
+
+| Путь | Содержимое |
+| --- | --- |
+| `frontend/src/app` | Маршруты и настройка приложения |
+| `frontend/src/pages/admin` | Страницы админки |
+| `frontend/src/features/admin` | Запросы и типы админского API |
+| `frontend/src/entities` | Модели и API товаров, заказов, пользователей и других сущностей |
+| `backend/app/routes` | Публичные и админские HTTP-маршруты |
+| `backend/app/services` | Логика каталога, заказов и аккаунтов |
+| `backend/database/migrations` | Миграции Alembic |
+| `backend/seed.py` | Демо-каталог |
+
+Админские маршруты API: `/api/admin/catalog/products`, `/api/admin/catalog/categories`, `/api/admin/users` и `/api/admin/orders`. Страницы фронтенда используют адреса `/admin/...`.
+
+## Данные и сеть
+
+PostgreSQL работает в отдельной базе `datam`. Данные базы сохраняются в томе `postgres-data`, настройки pgAdmin — в `pgadmin-data`, загруженные файлы — в `backend-data`. Порты PostgreSQL и backend не опубликованы наружу; Nginx на `127.0.0.1:80` передаёт `/api` и `/media` в backend, а `/pgadmin` — в pgAdmin.
