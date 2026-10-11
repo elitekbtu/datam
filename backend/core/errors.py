@@ -9,6 +9,7 @@ from app.services.errors import (
     NotFound,
     PermissionDenied,
     ServiceError,
+    ServiceUnavailable,
     Unauthenticated,
 )
 
@@ -19,6 +20,7 @@ ERROR_STATUS: Final[tuple[tuple[type[ServiceError], int], ...]] = (
     (PermissionDenied, status.HTTP_403_FORBIDDEN),
     (Unauthenticated, status.HTTP_401_UNAUTHORIZED),
     (InvalidRequest, status.HTTP_400_BAD_REQUEST),
+    (ServiceUnavailable, status.HTTP_503_SERVICE_UNAVAILABLE),
 )
 
 
