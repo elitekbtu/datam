@@ -13,6 +13,7 @@ const navigation = [
   { label: 'Одежда', to: '/catalog?category=clothing' },
   { label: 'Обувь', to: '/catalog?category=shoes' },
   { label: 'Аксессуары', to: '/catalog?category=accessories' },
+  { label: 'ИИ-стилист', to: '/stylist' },
 ]
 
 export function SiteHeader() {

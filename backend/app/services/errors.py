@@ -20,3 +20,7 @@ class Unauthenticated(ServiceError):
 
 class InvalidRequest(ServiceError):
     pass
+
+
+class ServiceUnavailable(ServiceError):
+    pass

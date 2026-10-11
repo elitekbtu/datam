@@ -24,6 +24,10 @@ services:
       MEDIA_ROOT: /data/media
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       CORS_ORIGINS: ""
+      # Ollama runs on the host machine, outside Compose.
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - backend-data:/data
     depends_on:

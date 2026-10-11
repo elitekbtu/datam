@@ -34,6 +34,11 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     COOKIE_SECURE: bool = False
 
+    OLLAMA_URL: str = "http://127.0.0.1:11434"
+    OLLAMA_MODEL: str = "qwen3.5:2b"
+    OLLAMA_TIMEOUT_SECONDS: float = 120
+    STYLIST_MAX_CANDIDATES: int = 40
+
     CORS_ORIGINS: Annotated[list[str], NoDecode] = []
 
     @field_validator("CORS_ORIGINS", mode="before")

@@ -5,12 +5,14 @@ from app.routes.admin import admin_router
 from app.routes.auth import router as auth_router
 from app.routes.catalog import catalog_router
 from app.routes.commerce import commerce_router
+from app.routes.stylist import router as stylist_router
 
 api_router = APIRouter()
 api_router.include_router(auth_router)
 api_router.include_router(account_router)
 api_router.include_router(catalog_router)
 api_router.include_router(commerce_router)
+api_router.include_router(stylist_router)
 api_router.include_router(admin_router)
 
 __all__ = ["api_router"]
