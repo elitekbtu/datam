@@ -7,7 +7,7 @@ from decimal import Decimal
 
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://invalid:invalid@127.0.0.1/datam_test")
 
-from app.services.stylist.picking import (  # noqa: E402
+from app.services.stylist.replies import (  # noqa: E402
     Candidate,
     Suggestion,
     assemble,

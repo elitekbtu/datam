@@ -1,4 +1,4 @@
-"""Turning the model's reply into an outfit the store can actually sell.
+"""Reading the model's replies and holding them to what the store can sell.
 
 A small local model is good at matching clothes to an occasion but not at
 arithmetic or following rules, so everything checkable is checked here.
