@@ -15,6 +15,7 @@ export type CategoryInput = {
 export type ProductInput = {
   name: string; slug?: string; description: string | null; price: string; currency: string
   sku: string; stock: number; audience: Product['audience']; category_id: string; is_active: boolean
+  formality: Product['formality']; color: string | null
 }
 
 export type VariantInput = {
