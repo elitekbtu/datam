@@ -51,9 +51,7 @@ def offer_codes(
     return offered, by_code
 
 
-async def choose(
-    found: list[Offer], groups: list[Group], request: str, budget: Decimal
-) -> Outfit:
+async def choose(found: list[Offer], groups: list[Group], request: str, budget: Decimal) -> Outfit:
     offered, by_code = offer_codes(found, groups)
     words = list(dict.fromkeys(g.word for o in found if (g := group_of(o, groups))))
     lines = [catalog_line(code, by_code[code]) for code in offered]

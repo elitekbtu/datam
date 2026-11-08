@@ -1,13 +1,15 @@
 """Run with ``python -m unittest tests.test_stylist`` from ``backend/``."""
 
+import json
 import os
 import unittest
 import uuid
 from decimal import Decimal
 
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://invalid:invalid@127.0.0.1/datam_test")
+os.environ.setdefault("SECRET_KEY", "unit-test-secret-key-0123456789abcdef")
 
-from app.services.stylist.replies import (  # noqa: E402
+from app.services.stylist.replies import (
     Candidate,
     Suggestion,
     assemble,
@@ -23,9 +25,21 @@ def candidate(code: str, category: str, price: str) -> Candidate:
     return Candidate(code, uuid.uuid4(), None, category, Decimal(price))
 
 
+def wanted_reply(*pairs: tuple[str, str]) -> str:
+    items = [{"word": word, "category": category} for word, category in pairs]
+    return json.dumps({"wanted": items}, ensure_ascii=False)
+
+
 class ParseReply(unittest.TestCase):
     def test_reads_json_reply(self) -> None:
-        reply = '{"title": "Вечер", "summary": "Тепло.", "items": [{"id": "P2", "reason": "Тёплый"}, {"id": "p10"}]}'
+        reply = json.dumps(
+            {
+                "title": "Вечер",
+                "summary": "Тепло.",
+                "items": [{"id": "P2", "reason": "Тёплый"}, {"id": "p10"}],
+            },
+            ensure_ascii=False,
+        )
         suggestion = parse_reply(reply)
         self.assertEqual(suggestion.title, "Вечер")
         self.assertEqual(suggestion.summary, "Тепло.")
@@ -49,18 +63,23 @@ class ParseWanted(unittest.TestCase):
     request = "хочу купить пальто и обувь, сумку тоже, остальное всё есть"
 
     def test_keeps_words_the_shopper_wrote(self) -> None:
-        reply = '{"wanted": [{"word": "пальто", "category": "Верхняя одежда"}, {"word": "сумка", "category": "Сумки"}]}'
+        reply = wanted_reply(("пальто", "Верхняя одежда"), ("сумка", "Сумки"))
         wanted = parse_wanted(reply, self.request)
-        self.assertEqual([(w.word, w.category) for w in wanted], [("пальто", "Верхняя одежда"), ("сумка", "Сумки")])
+        self.assertEqual(
+            [(w.word, w.category) for w in wanted],
+            [("пальто", "Верхняя одежда"), ("сумка", "Сумки")],
+        )
 
     def test_drops_items_the_model_made_up(self) -> None:
-        reply = '{"wanted": [{"word": "платье", "category": "Платья"}, {"word": "обувь", "category": "Обувь"}]}'
+        reply = wanted_reply(("платье", "Платья"), ("обувь", "Обувь"))
         self.assertEqual([w.word for w in parse_wanted(reply, self.request)], ["обувь"])
 
     def test_whole_outfit_and_garbage(self) -> None:
         self.assertEqual(parse_wanted('{"wanted": []}', self.request), [])
         self.assertEqual(parse_wanted("пальто", self.request), [])
-        self.assertEqual(parse_wanted('{"wanted": ["пальто", {"word": "пальто"}]}', self.request), [])
+        self.assertEqual(
+            parse_wanted('{"wanted": ["пальто", {"word": "пальто"}]}', self.request), []
+        )
 
     def test_stem_matches_word_forms(self) -> None:
         self.assertIn(stem("Сумка"), "купить сумку")
@@ -84,8 +103,12 @@ class Assemble(unittest.TestCase):
         return [pick.candidate.code for pick in chosen]
 
     def test_keeps_model_order_and_reasons(self) -> None:
-        chosen = assemble(Suggestion(picks=[("P4", "удобно"), ("P1", None)]), self.offered, Decimal("500000"))
-        self.assertEqual([(p.candidate.code, p.reason) for p in chosen], [("P4", "удобно"), ("P1", None)])
+        chosen = assemble(
+            Suggestion(picks=[("P4", "удобно"), ("P1", None)]), self.offered, Decimal("500000")
+        )
+        self.assertEqual(
+            [(p.candidate.code, p.reason) for p in chosen], [("P4", "удобно"), ("P1", None)]
+        )
 
     def test_drops_unknown_codes_and_repeats(self) -> None:
         self.assertEqual(self.codes([("P9", None), ("P1", None), ("P1", None)], "500000"), ["P1"])
@@ -95,11 +118,15 @@ class Assemble(unittest.TestCase):
 
     def test_never_exceeds_budget(self) -> None:
         # All three cost 209 700; of the pairs that fit, P1 + P2 uses the most budget.
-        self.assertEqual(self.codes([("P1", None), ("P4", None), ("P2", None)], "140000"), ["P1", "P2"])
+        self.assertEqual(
+            self.codes([("P1", None), ("P4", None), ("P2", None)], "140000"), ["P1", "P2"]
+        )
 
     def test_prefers_more_pieces_over_the_first_pick(self) -> None:
         # P1 alone fits 120 000, but P4 + P2 makes a fuller outfit for 119 800.
-        self.assertEqual(self.codes([("P1", None), ("P2", None), ("P4", None)], "120000"), ["P2", "P4"])
+        self.assertEqual(
+            self.codes([("P1", None), ("P2", None), ("P4", None)], "120000"), ["P2", "P4"]
+        )
 
     def test_nothing_fits(self) -> None:
         self.assertEqual(self.codes([("P1", None)], "1000"), [])

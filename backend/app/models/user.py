@@ -15,12 +15,8 @@ class User(Base, TimestampMixin):
         primary_key=True,
         default=uuid.uuid4,
     )
-    email: Mapped[str] = mapped_column(
-        String(320), unique=True, index=True, nullable=False
-    )
-    username: Mapped[str] = mapped_column(
-        String(32), unique=True, index=True, nullable=False
-    )
+    email: Mapped[str] = mapped_column(String(320), unique=True, index=True, nullable=False)
+    username: Mapped[str] = mapped_column(String(32), unique=True, index=True, nullable=False)
     full_name: Mapped[str | None] = mapped_column(String(128), nullable=True)
     hashed_password: Mapped[str] = mapped_column(String(128), nullable=False)
 

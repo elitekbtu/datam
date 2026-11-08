@@ -5,8 +5,8 @@ from typing import Annotated
 
 from pydantic import BaseModel, Field
 
-from app.schemas.catalog import ProductRead
 from app.schemas.base import ReadSchema, WriteSchema
+from app.schemas.catalog import ProductRead
 from utils.enums import OrderStatus
 
 

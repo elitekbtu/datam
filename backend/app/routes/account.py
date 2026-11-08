@@ -2,8 +2,8 @@ from fastapi import APIRouter, Response, status
 
 from app.models.user import User
 from app.schemas.user import PasswordChange, UserRead, UserUpdate
-from app.services.user import profile, users
 from app.services.auth.sessions import revoke_all
+from app.services.user import profile, users
 from core.cookies import clear_auth_cookies
 from core.dependencies import CurrentUser, DbSession
 

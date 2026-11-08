@@ -1,0 +1,11 @@
+line-length = 100
+target-version = "py312"
+extend-exclude = ["database/migrations"]
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+# User-facing text is Russian; Cyrillic letters are intended, not look-alikes.
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[lint.isort]
+known-first-party = ["app", "core", "database", "utils"]

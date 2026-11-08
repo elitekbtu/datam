@@ -6,11 +6,11 @@ so a request goes through these steps:
 1. ``catalog``: load every product the store can sell right now;
 2. ``understand``: ask the model which kinds of items the shopper wants to buy
    («пальто и обувь, остальное есть»), and note what cannot fit the budget;
-3. keep the products of those kinds that fit the budget;
+3. keep the products of those kinds that fit the budget and the ``dress_code``;
 4. ``outfit``: ask the model to choose pieces, checking its answer in ``replies``.
 
-Everything checkable (stock, budget, categories) is checked in code; the model
-only reads and chooses.
+Everything checkable (stock, budget, categories, dress code) is checked in code;
+the model only reads and chooses.
 """
 
 from decimal import Decimal
@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.catalog import ProductRead
 from app.schemas.stylist import OutfitItem, OutfitRead, OutfitRequest
+from app.services.stylist import dress_code
 from app.services.stylist.catalog import active_categories, sellable
 from app.services.stylist.outfit import choose
 from app.services.stylist.understand import budget_notes, group_of, understand
@@ -38,11 +39,16 @@ async def suggest(db: AsyncSession, payload: OutfitRequest) -> OutfitRead:
 
     groups = await understand(request, categories, offers)
     notes = budget_notes(groups, offers, payload.budget)
+    formal = dress_code.is_formal(request)
+    if formal:
+        notes += dress_code.ruled_out(groups, offers)
 
     found = [
         offer
         for offer in offers
-        if offer.price <= payload.budget and (not groups or group_of(offer, groups))
+        if offer.price <= payload.budget
+        and dress_code.allowed(offer.product, formal)
+        and (not groups or group_of(offer, groups))
     ][: settings.STYLIST_MAX_CANDIDATES]
     if not found:
         if notes:

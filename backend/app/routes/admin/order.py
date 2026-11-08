@@ -42,9 +42,7 @@ async def read_order(order_id: uuid.UUID, db: DbSession) -> AdminOrderRead:
     return await admin_orders.read_order(db, order_id)
 
 
-@router.patch(
-    "/{order_id}", response_model=AdminOrderRead, summary="Update delivery details"
-)
+@router.patch("/{order_id}", response_model=AdminOrderRead, summary="Update delivery details")
 async def update_order_delivery(
     order_id: uuid.UUID, payload: OrderDeliveryUpdate, db: DbSession
 ) -> AdminOrderRead:

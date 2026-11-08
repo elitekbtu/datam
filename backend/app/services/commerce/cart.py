@@ -1,11 +1,13 @@
 import uuid
 from decimal import Decimal
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.catalog import Product
 from app.models.commerce import Cart, CartItem
 from app.schemas.commerce import CartItemRead, CartRead
-from app.services.commerce.common import get_product, variant_for, image_for, price_for
+from app.services.commerce.common import get_product, image_for, price_for, variant_for
 from app.services.errors import Conflict, NotFound
 
 
@@ -18,11 +20,7 @@ async def get_cart(
 ) -> Cart | None:
     condition = Cart.user_id == user_id if user_id else Cart.guest_id == guest_id
     cart = (
-        (
-            await db.scalars(
-                select(Cart).where(condition).execution_options(populate_existing=True)
-            )
-        )
+        (await db.scalars(select(Cart).where(condition).execution_options(populate_existing=True)))
         .unique()
         .one_or_none()
     )
@@ -39,9 +37,7 @@ async def read_cart(db: AsyncSession, cart: Cart | None) -> CartRead:
     ids = {item.product_id for item in cart.items}
     products = {
         product.id: product
-        for product in (
-            await db.scalars(select(Product).where(Product.id.in_(ids)))
-        ).unique()
+        for product in (await db.scalars(select(Product).where(Product.id.in_(ids)))).unique()
     }
     rows: list[CartItemRead] = []
     for item in cart.items:

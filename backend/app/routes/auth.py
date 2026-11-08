@@ -4,6 +4,7 @@ from app.schemas.auth import LoginRequest, RegisterRequest
 from app.schemas.user import UserRead
 from app.services import auth as auth_service
 from app.services.auth import sessions
+from app.services.errors import Unauthenticated
 from app.services.user import users
 from core.cookies import (
     GUEST_COOKIE,
@@ -13,7 +14,6 @@ from core.cookies import (
     set_csrf_cookie,
 )
 from core.dependencies import DbSession, OptionalUser
-from app.services.errors import Unauthenticated
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -44,9 +44,7 @@ async def session(
     return None
 
 
-async def finish_login(
-    db: DbSession, request: Request, response: Response, user
-) -> UserRead:
+async def finish_login(db: DbSession, request: Request, response: Response, user) -> UserRead:
     from app.services.commerce.guest import merge_guest
 
     access, refresh = await sessions.issue(db, user)

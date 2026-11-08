@@ -31,9 +31,7 @@ async def add_variant(
     return await variants.add_to(db, product, payload)
 
 
-@router.patch(
-    "/{variant_id}", response_model=ProductVariantRead, summary="Update a variant"
-)
+@router.patch("/{variant_id}", response_model=ProductVariantRead, summary="Update a variant")
 async def update_variant(
     product: TargetProduct,
     variant_id: uuid.UUID,
@@ -48,7 +46,5 @@ async def update_variant(
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a variant with its photos",
 )
-async def delete_variant(
-    product: TargetProduct, variant_id: uuid.UUID, db: DbSession
-) -> None:
+async def delete_variant(product: TargetProduct, variant_id: uuid.UUID, db: DbSession) -> None:
     await variants.delete(db, variant.find(product, variant_id))

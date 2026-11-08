@@ -1,5 +1,7 @@
 import uuid
+
 from fastapi import Request, Response
+
 from core.cookies import GUEST_COOKIE, set_guest_cookie
 from core.dependencies import OptionalUser
 

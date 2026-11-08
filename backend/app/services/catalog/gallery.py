@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.catalog import Product, ProductImage
 from app.schemas.catalog import ProductImageCreate
-from app.services.catalog.errors import ImageNotFound, InvalidImageOrder
 from app.services.catalog import storage
+from app.services.catalog.errors import ImageNotFound, InvalidImageOrder
 from app.services.catalog.product import products
 from app.services.catalog.variant import find as find_variant
 
@@ -30,9 +30,7 @@ async def save(db: AsyncSession, product: Product) -> Product:
     return await products.save(db, product)
 
 
-async def add(
-    db: AsyncSession, product: Product, payload: ProductImageCreate
-) -> Product:
+async def add(db: AsyncSession, product: Product, payload: ProductImageCreate) -> Product:
     changes = payload.model_dump()
     if changes["variant_id"] is not None:
         find_variant(product, changes["variant_id"])
@@ -73,9 +71,7 @@ async def remove(db: AsyncSession, product: Product, image_id: uuid.UUID) -> Pro
     return product
 
 
-async def reorder(
-    db: AsyncSession, product: Product, image_ids: list[uuid.UUID]
-) -> Product:
+async def reorder(db: AsyncSession, product: Product, image_ids: list[uuid.UUID]) -> Product:
     if len(set(image_ids)) != len(image_ids):
         raise InvalidImageOrder("List every photo of this gallery exactly once")
 
@@ -93,9 +89,7 @@ async def reorder(
     return await save(db, product)
 
 
-async def set_primary(
-    db: AsyncSession, product: Product, image_id: uuid.UUID
-) -> Product:
+async def set_primary(db: AsyncSession, product: Product, image_id: uuid.UUID) -> Product:
     target = find(product, image_id)
     for image in group_of(product, target.variant_id):
         image.is_primary = image.id == image_id

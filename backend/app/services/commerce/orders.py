@@ -1,12 +1,14 @@
 import uuid
 from decimal import Decimal
+
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.catalog import Product, ProductVariant
 from app.models.commerce import Order, OrderItem
 from app.schemas.commerce import OrderCreate, OrderPage, OrderRead
 from app.services.commerce.cart import get_cart
-from app.services.commerce.common import get_product, variant_for, image_for, price_for
+from app.services.commerce.common import get_product, image_for, price_for, variant_for
 from app.services.errors import Conflict, InvalidRequest, NotFound
 from utils.enums import Currency
 
@@ -17,9 +19,7 @@ async def create_order(
     prior = (
         (
             await db.scalars(
-                select(Order).where(
-                    Order.user_id == user_id, Order.idempotency_key == key
-                )
+                select(Order).where(Order.user_id == user_id, Order.idempotency_key == key)
             )
         )
         .unique()
@@ -77,19 +77,13 @@ async def create_order(
     order.subtotal = subtotal
     order.total = subtotal
     await db.commit()
-    loaded = (
-        (await db.scalars(select(Order).where(Order.id == order.id))).unique().one()
-    )
+    loaded = (await db.scalars(select(Order).where(Order.id == order.id))).unique().one()
     return OrderRead.model_validate(loaded)
 
 
-async def list_orders(
-    db: AsyncSession, user_id: uuid.UUID, limit: int, offset: int
-) -> OrderPage:
+async def list_orders(db: AsyncSession, user_id: uuid.UUID, limit: int, offset: int) -> OrderPage:
     total = (
-        await db.scalar(
-            select(func.count()).select_from(Order).where(Order.user_id == user_id)
-        )
+        await db.scalar(select(func.count()).select_from(Order).where(Order.user_id == user_id))
         or 0
     )
     orders = (
@@ -113,15 +107,9 @@ async def list_orders(
     )
 
 
-async def read_order(
-    db: AsyncSession, user_id: uuid.UUID, order_id: uuid.UUID
-) -> OrderRead:
+async def read_order(db: AsyncSession, user_id: uuid.UUID, order_id: uuid.UUID) -> OrderRead:
     order = (
-        (
-            await db.scalars(
-                select(Order).where(Order.id == order_id, Order.user_id == user_id)
-            )
-        )
+        (await db.scalars(select(Order).where(Order.id == order_id, Order.user_id == user_id)))
         .unique()
         .one_or_none()
     )

@@ -1,4 +1,4 @@
-"""Run with ``backend/.venv/bin/python -m unittest discover -s tests``."""
+"""Run with ``make test``, or point both DATABASE_URL and TEST_DATABASE_URL at a *_test database."""
 
 import os
 import tempfile
@@ -13,9 +13,13 @@ temporary = tempfile.TemporaryDirectory(prefix="datam-test-")
 test_database_url = os.environ.get("TEST_DATABASE_URL")
 if test_database_url is not None:
     parsed_url = make_url(test_database_url)
-    if parsed_url.drivername != "postgresql+asyncpg" or not (parsed_url.database or "").endswith("_test"):
+    if parsed_url.drivername != "postgresql+asyncpg" or not (parsed_url.database or "").endswith(
+        "_test"
+    ):
         raise RuntimeError("TEST_DATABASE_URL must point to a PostgreSQL database ending in _test")
-os.environ["DATABASE_URL"] = test_database_url or "postgresql+asyncpg://invalid:invalid@127.0.0.1/datam_test"
+os.environ["DATABASE_URL"] = (
+    test_database_url or "postgresql+asyncpg://invalid:invalid@127.0.0.1/datam_test"
+)
 os.environ["MEDIA_ROOT"] = str(Path(temporary.name) / "media")
 os.environ["DEBUG"] = "false"
 os.environ["COOKIE_SECURE"] = "false"
@@ -31,6 +35,9 @@ from seed import main as seed_demo  # noqa: E402
 @unittest.skipUnless(test_database_url, "Set TEST_DATABASE_URL to a disposable PostgreSQL database")
 class StorefrontFlow(unittest.IsolatedAsyncioTestCase):
     async def test_customer_flow(self) -> None:
+        # Another test module may have loaded the settings, and so the engine, before this one.
+        if not (engine.url.database or "").endswith("_test"):
+            raise RuntimeError(f"Refusing to reset {engine.url.database!r}: not a *_test database")
         async with engine.begin() as connection:
             await connection.run_sync(Base.metadata.drop_all)
             await connection.run_sync(Base.metadata.create_all)
@@ -40,45 +47,27 @@ class StorefrontFlow(unittest.IsolatedAsyncioTestCase):
         ) as client:
             token = (await client.get("/api/auth/csrf")).json()["csrf_token"]
             headers = {"X-CSRF-Token": token}
-            self.assertIsNone(
-                (await client.post("/api/auth/session", headers=headers)).json()
-            )
-            categories = (await client.get("/api/catalog/categories?limit=100")).json()[
-                "items"
-            ]
+            self.assertIsNone((await client.post("/api/auth/session", headers=headers)).json())
+            categories = (await client.get("/api/catalog/categories?limit=100")).json()["items"]
             self.assertGreaterEqual(len(categories), 8)
             products = (
-                await client.get(
-                    "/api/catalog/products?audience=women&category=clothing"
-                )
+                await client.get("/api/catalog/products?audience=women&category=clothing")
             ).json()["items"]
             self.assertTrue(products)
-            self.assertTrue(
-                all(product["audience"] in ("women", "unisex") for product in products)
-            )
+            self.assertTrue(all(product["audience"] in ("women", "unisex") for product in products))
             affordable = (
-                await client.get(
-                    "/api/catalog/products?audience=women&max_price=50000&sort=price"
-                )
+                await client.get("/api/catalog/products?audience=women&max_price=50000&sort=price")
             ).json()["items"]
             self.assertTrue(affordable)
-            self.assertTrue(
-                all(float(product["price"]) <= 50000 for product in affordable)
-            )
-            blazer = next(
-                product
-                for product in products
-                if product["slug"] == "black-wool-blazer"
-            )
+            self.assertTrue(all(float(product["price"]) <= 50000 for product in affordable))
+            blazer = next(product for product in products if product["slug"] == "black-wool-blazer")
             variant = blazer["variants"][0]
             item = {
                 "product_id": blazer["id"],
                 "variant_id": variant["id"],
                 "quantity": 1,
             }
-            self.assertEqual(
-                (await client.post("/api/cart/items", json=item)).status_code, 403
-            )
+            self.assertEqual((await client.post("/api/cart/items", json=item)).status_code, 403)
             self.assertEqual(
                 (
                     await client.post(
@@ -113,9 +102,7 @@ class StorefrontFlow(unittest.IsolatedAsyncioTestCase):
                 409,
             )
             self.assertEqual(
-                (
-                    await client.put(f"/api/favorites/{blazer['id']}", headers=headers)
-                ).status_code,
+                (await client.put(f"/api/favorites/{blazer['id']}", headers=headers)).status_code,
                 200,
             )
 
@@ -133,15 +120,11 @@ class StorefrontFlow(unittest.IsolatedAsyncioTestCase):
             self.assertNotIn("access_token", registered.json())
             self.assertIn("datam_access", client.cookies)
             self.assertEqual(
-                (await client.post("/api/auth/session", headers=headers)).json()[
-                    "username"
-                ],
+                (await client.post("/api/auth/session", headers=headers)).json()["username"],
                 "shopper",
             )
             self.assertEqual((await client.get("/api/cart")).json()["count"], 1)
-            self.assertEqual(
-                len((await client.get("/api/favorites")).json()["items"]), 1
-            )
+            self.assertEqual(len((await client.get("/api/favorites")).json()["items"]), 1)
             self.assertEqual(
                 (await client.post("/api/auth/refresh", headers=headers)).status_code,
                 200,
@@ -167,31 +150,23 @@ class StorefrontFlow(unittest.IsolatedAsyncioTestCase):
                 "note": None,
             }
             order_headers = {**headers, "Idempotency-Key": "checkout-test-001"}
-            order = await client.post(
-                "/api/orders", headers=order_headers, json=payload
-            )
+            order = await client.post("/api/orders", headers=order_headers, json=payload)
             self.assertEqual(order.status_code, 201, order.text)
             order_id = order.json()["id"]
             self.assertEqual(order.json()["total"], blazer["price"])
             self.assertEqual(
-                (
-                    await client.post(
-                        "/api/orders", headers=order_headers, json=payload
-                    )
-                ).json()["id"],
+                (await client.post("/api/orders", headers=order_headers, json=payload)).json()[
+                    "id"
+                ],
                 order_id,
             )
             self.assertEqual((await client.get("/api/cart")).json()["count"], 0)
             self.assertEqual((await client.get("/api/orders")).json()["total"], 1)
             self.assertEqual(
-                (await client.get(f"/api/orders/{order_id}")).json()["items"][0][
-                    "name"
-                ],
+                (await client.get(f"/api/orders/{order_id}")).json()["items"][0]["name"],
                 blazer["name"],
             )
-            current = (
-                await client.get(f"/api/catalog/products/{blazer['slug']}")
-            ).json()
+            current = (await client.get(f"/api/catalog/products/{blazer['slug']}")).json()
             self.assertEqual(current["variants"][0]["stock"], variant["stock"] - 1)
 
             changed = await client.put(
@@ -222,9 +197,7 @@ class StorefrontFlow(unittest.IsolatedAsyncioTestCase):
                 204,
             )
             self.assertEqual((await client.get("/api/account")).status_code, 401)
-            self.assertIsNone(
-                (await client.post("/api/auth/session", headers=headers)).json()
-            )
+            self.assertIsNone((await client.post("/api/auth/session", headers=headers)).json())
             self.assertEqual(
                 (
                     await client.post(

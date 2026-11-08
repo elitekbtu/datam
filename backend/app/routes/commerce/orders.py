@@ -1,6 +1,8 @@
 import uuid
 from typing import Annotated
+
 from fastapi import APIRouter, Header, status
+
 from app.schemas.commerce import OrderCreate, OrderPage, OrderRead
 from app.services.commerce import orders as commerce
 from core.dependencies import CurrentUser, DbSession, PageParams
@@ -24,7 +26,5 @@ async def list_orders(user: CurrentUser, db: DbSession, page: PageParams) -> Ord
 
 
 @router.get("/{order_id}", response_model=OrderRead)
-async def read_order(
-    order_id: uuid.UUID, user: CurrentUser, db: DbSession
-) -> OrderRead:
+async def read_order(order_id: uuid.UUID, user: CurrentUser, db: DbSession) -> OrderRead:
     return await commerce.read_order(db, user.id, order_id)

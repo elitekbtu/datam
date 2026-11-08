@@ -22,9 +22,7 @@ class Offer(NamedTuple):
 
 def suggested_variant(product: Product) -> ProductVariant | None:
     """The first in-stock size, or ``None`` for a product sold without sizes."""
-    return next(
-        (v for v in product.variants if v.is_active and v.stock > 0), None
-    )
+    return next((v for v in product.variants if v.is_active and v.stock > 0), None)
 
 
 async def sellable(db: AsyncSession, audience: Audience | None) -> list[Offer]:

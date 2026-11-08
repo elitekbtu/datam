@@ -8,9 +8,7 @@ from app.schemas.base import Page, ReadSchema, WriteSchema
 from utils.enums import UserRole
 
 Email = Annotated[EmailStr, Field(examples=["user@example.com"])]
-Username = Annotated[
-    str, Field(min_length=3, max_length=32, pattern=r"^[a-zA-Z0-9_.-]+$")
-]
+Username = Annotated[str, Field(min_length=3, max_length=32, pattern=r"^[a-zA-Z0-9_.-]+$")]
 FullName = Annotated[str | None, Field(max_length=128)]
 Password = Annotated[str, Field(min_length=8, max_length=72, examples=["s3cret-pass"])]
 

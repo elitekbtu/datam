@@ -18,9 +18,7 @@ def guard_self_edit(user: User, payload: AdminUserUpdate, actor: User) -> None:
         raise SelfActionForbidden("You cannot disable your own account")
 
 
-async def update(
-    db: AsyncSession, user: User, payload: AdminUserUpdate, *, actor: User
-) -> User:
+async def update(db: AsyncSession, user: User, payload: AdminUserUpdate, *, actor: User) -> User:
     guard_self_edit(user, payload, actor)
     return await users.update(db, user, payload)
 

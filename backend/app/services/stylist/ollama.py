@@ -7,7 +7,6 @@ from core.config import settings
 
 
 async def chat_json(system: str, messages: list[dict[str, str]]) -> str:
-    """Ask the model for a JSON reply to the conversation and return its raw text."""
     body = {
         "model": settings.OLLAMA_MODEL,
         "stream": False,

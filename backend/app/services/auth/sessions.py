@@ -26,9 +26,7 @@ def digest(token: str) -> str:
 
 def pair(user_id: uuid.UUID, session_id: uuid.UUID) -> tuple[str, str]:
     claims = {"sid": str(session_id)}
-    return create_access_token(user_id, **claims), create_refresh_token(
-        user_id, **claims
-    )
+    return create_access_token(user_id, **claims), create_refresh_token(user_id, **claims)
 
 
 async def issue(db: AsyncSession, user: User) -> tuple[str, str]:
@@ -39,8 +37,7 @@ async def issue(db: AsyncSession, user: User) -> tuple[str, str]:
             id=session_id,
             user_id=user.id,
             refresh_hash=digest(refresh),
-            expires_at=datetime.now(UTC)
-            + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+            expires_at=datetime.now(UTC) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
         )
     )
     await db.commit()
@@ -70,8 +67,7 @@ async def rotate(db: AsyncSession, token: str) -> tuple[User, str, str]:
         )
         .values(
             refresh_hash=digest(refresh),
-            expires_at=datetime.now(UTC)
-            + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+            expires_at=datetime.now(UTC) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
         )
     )
     if changed.rowcount != 1:
@@ -113,9 +109,7 @@ async def revoke(db: AsyncSession, refresh_token: str | None) -> None:
     except (TokenError, KeyError, ValueError):
         return
     await db.execute(
-        update(AuthSession)
-        .where(AuthSession.id == session_id)
-        .values(revoked_at=datetime.now(UTC))
+        update(AuthSession).where(AuthSession.id == session_id).values(revoked_at=datetime.now(UTC))
     )
     await db.commit()
 

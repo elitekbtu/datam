@@ -66,9 +66,7 @@ async def read_product(key: str, db: DbSession) -> Product:
 
 
 @router.patch("/{product_id}", response_model=ProductRead, summary="Update a product")
-async def update_product(
-    product: TargetProduct, payload: ProductUpdate, db: DbSession
-) -> Product:
+async def update_product(product: TargetProduct, payload: ProductUpdate, db: DbSession) -> Product:
     return await products.update(db, product, payload)
 
 

@@ -16,9 +16,7 @@ SearchTerm = Annotated[
     str | None,
     Query(max_length=128, description="Matches name, description, or any SKU"),
 ]
-CategoryKey = Annotated[
-    str | None, Query(description="Category id or slug to filter by")
-]
+CategoryKey = Annotated[str | None, Query(description="Category id or slug to filter by")]
 PriceBound = Annotated[Decimal | None, Query(ge=0)]
 
 
@@ -54,8 +52,6 @@ async def list_products(
     )
 
 
-@router.get(
-    "/{key}", response_model=ProductRead, summary="Read a product by id or slug"
-)
+@router.get("/{key}", response_model=ProductRead, summary="Read a product by id or slug")
 async def read_product(key: str, db: DbSession) -> Product:
     return await products.by_key(db, key, active_only=True)

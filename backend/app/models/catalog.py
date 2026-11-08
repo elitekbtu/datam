@@ -17,7 +17,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database.base import Base, TimestampMixin
-from utils.enums import Audience, Currency
+from utils.enums import Audience, Currency, Formality
 
 
 class Category(Base, TimestampMixin):
@@ -29,9 +29,7 @@ class Category(Base, TimestampMixin):
         default=uuid.uuid4,
     )
     name: Mapped[str] = mapped_column(String(128), nullable=False)
-    slug: Mapped[str] = mapped_column(
-        String(160), unique=True, index=True, nullable=False
-    )
+    slug: Mapped[str] = mapped_column(String(160), unique=True, index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     parent_id: Mapped[uuid.UUID | None] = mapped_column(
@@ -57,9 +55,7 @@ class Product(Base, TimestampMixin):
         default=uuid.uuid4,
     )
     name: Mapped[str] = mapped_column(String(200), nullable=False)
-    slug: Mapped[str] = mapped_column(
-        String(220), unique=True, index=True, nullable=False
-    )
+    slug: Mapped[str] = mapped_column(String(220), unique=True, index=True, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     currency: Mapped[Currency] = mapped_column(
@@ -74,12 +70,8 @@ class Product(Base, TimestampMixin):
         server_default=Currency.KZT.value,
         nullable=False,
     )
-    sku: Mapped[str] = mapped_column(
-        String(64), unique=True, index=True, nullable=False
-    )
-    stock: Mapped[int] = mapped_column(
-        Integer, default=0, server_default="0", nullable=False
-    )
+    sku: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
+    stock: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
     category_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True),
         ForeignKey("categories.id", ondelete="RESTRICT"),
@@ -88,10 +80,27 @@ class Product(Base, TimestampMixin):
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     audience: Mapped[Audience] = mapped_column(
-        Enum(Audience, name="audience", native_enum=False,
-             values_callable=lambda enum: [member.value for member in enum]),
-        default=Audience.UNISEX, server_default=Audience.UNISEX.value, nullable=False,
+        Enum(
+            Audience,
+            name="audience",
+            native_enum=False,
+            values_callable=lambda enum: [member.value for member in enum],
+        ),
+        default=Audience.UNISEX,
+        server_default=Audience.UNISEX.value,
+        nullable=False,
     )
+    # Style tags the AI stylist checks in code; untagged items pass every dress code.
+    formality: Mapped[Formality | None] = mapped_column(
+        Enum(
+            Formality,
+            name="formality",
+            native_enum=False,
+            values_callable=lambda enum: [member.value for member in enum],
+        ),
+        nullable=True,
+    )
+    color: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
     category: Mapped[Category] = relationship(lazy="joined")
     variants: Mapped[list["ProductVariant"]] = relationship(
@@ -148,20 +157,14 @@ class ProductVariant(Base, TimestampMixin):
         nullable=False,
     )
     name: Mapped[str] = mapped_column(String(120), nullable=False)
-    sku: Mapped[str] = mapped_column(
-        String(64), unique=True, index=True, nullable=False
-    )
+    sku: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
     options: Mapped[dict[str, str]] = mapped_column(
         JSON, default=dict, server_default="{}", nullable=False
     )
     price: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
-    stock: Mapped[int] = mapped_column(
-        Integer, default=0, server_default="0", nullable=False
-    )
+    stock: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    position: Mapped[int] = mapped_column(
-        Integer, default=0, server_default="0", nullable=False
-    )
+    position: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
 
     product: Mapped[Product] = relationship(back_populates="variants")
     images: Mapped[list["ProductImage"]] = relationship(
@@ -178,9 +181,7 @@ class ProductImage(Base, TimestampMixin):
     """A photo of a product, or of one of its variants when ``variant_id`` is set."""
 
     __tablename__ = "product_images"
-    __table_args__ = (
-        Index("ix_product_images_product_id_position", "product_id", "position"),
-    )
+    __table_args__ = (Index("ix_product_images_product_id_position", "product_id", "position"),)
 
     id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True),
@@ -200,9 +201,7 @@ class ProductImage(Base, TimestampMixin):
     )
     url: Mapped[str] = mapped_column(String(1024), nullable=False)
     alt_text: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    position: Mapped[int] = mapped_column(
-        Integer, default=0, server_default="0", nullable=False
-    )
+    position: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
     is_primary: Mapped[bool] = mapped_column(
         Boolean, default=False, server_default="0", nullable=False
     )

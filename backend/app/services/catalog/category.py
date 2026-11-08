@@ -9,11 +9,7 @@ from app.services.catalog.errors import CategoryInUse, SlugAlreadyExists
 from app.services.errors import Conflict, InvalidRequest
 
 
-class CategoryService(
-    CRUDService[Category, CategoryRead, CategoryCreate, CategoryUpdate]
-):
-    """Storage for the sections products are filed under."""
-
+class CategoryService(CRUDService[Category, CategoryRead, CategoryCreate, CategoryUpdate]):
     model = Category
     read_schema = CategoryRead
     nullable_fields = frozenset({"description", "parent_id"})
@@ -48,12 +44,12 @@ class CategoryService(
         return list(result)
 
     async def delete(self, db: AsyncSession, instance: Category) -> None:
-        stmt = select(func.count()).select_from(Product).where(
-            Product.category_id == instance.id
-        )
+        stmt = select(func.count()).select_from(Product).where(Product.category_id == instance.id)
         if await db.scalar(stmt):
             raise CategoryInUse("Move the products out of this category first")
-        if await db.scalar(select(func.count()).select_from(Category).where(Category.parent_id == instance.id)):
+        if await db.scalar(
+            select(func.count()).select_from(Category).where(Category.parent_id == instance.id)
+        ):
             raise CategoryInUse("Move child categories first")
         await super().delete(db, instance)
 

@@ -1,6 +1,8 @@
 import uuid
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.catalog import Product
 from app.models.commerce import CartItem, Favorite
 from app.services.commerce.cart import get_cart
@@ -20,8 +22,7 @@ async def merge_guest(db: AsyncSession, raw_guest_id: str, user_id: uuid.UUID) -
                 (
                     row
                     for row in owned.items
-                    if row.product_id == item.product_id
-                    and row.variant_id == item.variant_id
+                    if row.product_id == item.product_id and row.variant_id == item.variant_id
                 ),
                 None,
             )
@@ -30,20 +31,14 @@ async def merge_guest(db: AsyncSession, raw_guest_id: str, user_id: uuid.UUID) -
                 continue
             variant = (
                 next(
-                    (
-                        v
-                        for v in product.variants
-                        if v.id == item.variant_id and v.is_active
-                    ),
+                    (v for v in product.variants if v.id == item.variant_id and v.is_active),
                     None,
                 )
                 if item.variant_id
                 else None
             )
             stock = variant.stock if variant else product.stock
-            quantity = min(
-                stock, item.quantity + (existing.quantity if existing else 0), 99
-            )
+            quantity = min(stock, item.quantity + (existing.quantity if existing else 0), 99)
             if quantity < 1:
                 continue
             if existing:
@@ -58,15 +53,9 @@ async def merge_guest(db: AsyncSession, raw_guest_id: str, user_id: uuid.UUID) -
                     )
                 )
         await db.delete(guest)
-    guest_favs = (
-        await db.scalars(select(Favorite).where(Favorite.guest_id == guest_id))
-    ).all()
+    guest_favs = (await db.scalars(select(Favorite).where(Favorite.guest_id == guest_id))).all()
     owned_favs = set(
-        (
-            await db.scalars(
-                select(Favorite.product_id).where(Favorite.user_id == user_id)
-            )
-        ).all()
+        (await db.scalars(select(Favorite.product_id).where(Favorite.user_id == user_id))).all()
     )
     for favorite in guest_favs:
         if favorite.product_id not in owned_favs:

@@ -51,9 +51,7 @@ async def read_category(key: str, db: DbSession) -> Category:
     return await categories.by_key(db, key)
 
 
-@router.patch(
-    "/{category_id}", response_model=CategoryRead, summary="Update a category"
-)
+@router.patch("/{category_id}", response_model=CategoryRead, summary="Update a category")
 async def update_category(
     category_id: uuid.UUID, payload: CategoryUpdate, db: DbSession
 ) -> Category:

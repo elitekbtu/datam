@@ -10,6 +10,7 @@ from utils.enums import TokenType
 
 BCRYPT_MAX_BYTES: Final = 72
 
+
 class TokenError(Exception):
     """Raised when a token is malformed, expired, or of an unexpected type."""
 
@@ -24,9 +25,7 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
-        return bcrypt.checkpw(
-            encode_password(plain_password), hashed_password.encode("utf-8")
-        )
+        return bcrypt.checkpw(encode_password(plain_password), hashed_password.encode("utf-8"))
     except ValueError:
         return False
 

@@ -25,7 +25,6 @@ ERROR_STATUS: Final[tuple[tuple[type[ServiceError], int], ...]] = (
 
 
 def http_error(exc: ServiceError) -> HTTPException:
-    """Translate a service failure into the response a client should see."""
     for error_type, status_code in ERROR_STATUS:
         if isinstance(exc, error_type):
             return HTTPException(
@@ -36,8 +35,6 @@ def http_error(exc: ServiceError) -> HTTPException:
 
 
 def register_error_handlers(app: FastAPI) -> None:
-    """Let routes raise service errors instead of catching each one by hand."""
-
     @app.exception_handler(ServiceError)
     async def handle_service_error(request: Request, exc: ServiceError) -> Response:
         return await http_exception_handler(request, http_error(exc))

@@ -63,9 +63,7 @@ class CRUDService[
                 return
             source = str(changes.get(self.slug_source, ""))
         if not (slug := slugify(source)):
-            raise InvalidRequest(
-                f"Could not build a {self.slug_field} from {source!r}; send one"
-            )
+            raise InvalidRequest(f"Could not build a {self.slug_field} from {source!r}; send one")
         changes[self.slug_field] = slug
 
     async def ensure_unique(
@@ -75,9 +73,7 @@ class CRUDService[
         instance: ModelT | None = None,
     ) -> None:
         wanted = {
-            field: changes[field]
-            for field in self.unique_fields
-            if changes.get(field) is not None
+            field: changes[field] for field in self.unique_fields if changes.get(field) is not None
         }
         if not wanted:
             return
@@ -136,9 +132,7 @@ class CRUDService[
         )
         return (await db.scalars(stmt)).unique().one()
 
-    async def apply(
-        self, db: AsyncSession, instance: ModelT, changes: dict[str, Any]
-    ) -> ModelT:
+    async def apply(self, db: AsyncSession, instance: ModelT, changes: dict[str, Any]) -> ModelT:
         for field, value in changes.items():
             setattr(instance, field, value)
         return await self.save(db, instance)
@@ -152,9 +146,7 @@ class CRUDService[
             raise NotFound(self.not_found_message)
         return instance
 
-    async def by_key(
-        self, db: AsyncSession, key: str, *, active_only: bool = False
-    ) -> ModelT:
+    async def by_key(self, db: AsyncSession, key: str, *, active_only: bool = False) -> ModelT:
         """Look a row up by id, or by :attr:`slug_field` when the key is a slug."""
         try:
             instance = await self.get(db, uuid.UUID(key))
@@ -170,15 +162,11 @@ class CRUDService[
             raise NotFound(self.not_found_message)
         return instance
 
-    async def create(
-        self, db: AsyncSession, payload: CreateT, **extra: Any
-    ) -> ModelT:
+    async def create(self, db: AsyncSession, payload: CreateT, **extra: Any) -> ModelT:
         changes = await self.prepare(db, self.collect(payload, partial=False) | extra)
         return await self.save(db, self.model(**changes))
 
-    async def update(
-        self, db: AsyncSession, instance: ModelT, payload: UpdateT
-    ) -> ModelT:
+    async def update(self, db: AsyncSession, instance: ModelT, payload: UpdateT) -> ModelT:
         changes = self.collect(payload, partial=True)
         return await self.apply(db, instance, await self.prepare(db, changes, instance))
 
@@ -194,9 +182,7 @@ class CRUDService[
         offset: int = 0,
         order_by: Sequence[Any] | None = None,
     ) -> Page[ReadT]:
-        total = await db.scalar(
-            select(func.count()).select_from(self.model).where(*conditions)
-        )
+        total = await db.scalar(select(func.count()).select_from(self.model).where(*conditions))
         stmt = (
             select(self.model)
             .where(*conditions)

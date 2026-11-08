@@ -71,8 +71,6 @@ async def update_user(
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Permanently remove an account",
 )
-async def delete_user(
-    user_id: uuid.UUID, admin: CurrentAdmin, db: DbSession
-) -> None:
+async def delete_user(user_id: uuid.UUID, admin: CurrentAdmin, db: DbSession) -> None:
     user = await users.require(db, user_id)
     await user_admin.delete(db, user, actor=admin)

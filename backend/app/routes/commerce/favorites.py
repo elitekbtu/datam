@@ -1,8 +1,10 @@
 import uuid
+
 from fastapi import APIRouter, Request, Response
+
+from app.routes.commerce.dependencies import owner
 from app.schemas.commerce import FavoriteRead
 from app.services.commerce import favorites as commerce
-from app.routes.commerce.dependencies import owner
 from core.dependencies import DbSession, OptionalUser
 
 router = APIRouter(prefix="/favorites", tags=["Favorites"])

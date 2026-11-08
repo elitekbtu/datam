@@ -2,10 +2,12 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Annotated
 
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+DEV_SECRET_KEY = "dev-secret-change-me"
+MIN_SECRET_KEY_LENGTH = 32
 
 
 class Settings(BaseSettings):
@@ -28,7 +30,7 @@ class Settings(BaseSettings):
     MEDIA_URL: str = "/media"
     MAX_UPLOAD_BYTES: int = 5 * 1024 * 1024
 
-    SECRET_KEY: str = "dev-secret-change-me"
+    SECRET_KEY: str = DEV_SECRET_KEY
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
@@ -47,6 +49,16 @@ class Settings(BaseSettings):
         if isinstance(value, str):
             return [origin.strip() for origin in value.split(",") if origin.strip()]
         return value
+
+    @model_validator(mode="after")
+    def _require_real_secret_outside_debug(self) -> "Settings":
+        weak = self.SECRET_KEY == DEV_SECRET_KEY or len(self.SECRET_KEY) < MIN_SECRET_KEY_LENGTH
+        if weak and not self.DEBUG:
+            raise ValueError(
+                f"SECRET_KEY must be a random string of at least {MIN_SECRET_KEY_LENGTH} "
+                "characters when DEBUG is off (openssl rand -hex 32)"
+            )
+        return self
 
     @property
     def sync_database_url(self) -> str:

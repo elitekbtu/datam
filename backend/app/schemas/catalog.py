@@ -6,7 +6,7 @@ from typing import Annotated
 from pydantic import BaseModel, Field
 
 from app.schemas.base import Page, ReadSchema, WriteSchema
-from utils.enums import Audience, Currency
+from utils.enums import Audience, Currency, Formality
 
 CategoryName = Annotated[str, Field(min_length=2, max_length=128)]
 ProductName = Annotated[str, Field(min_length=2, max_length=200)]
@@ -29,14 +29,13 @@ Sku = Annotated[
         examples=["COF-1001"],
     ),
 ]
-Price = Annotated[
-    Decimal, Field(ge=0, max_digits=12, decimal_places=2, examples=["19990.00"])
-]
+Price = Annotated[Decimal, Field(ge=0, max_digits=12, decimal_places=2, examples=["19990.00"])]
 Stock = Annotated[int, Field(ge=0, examples=[12])]
 ImageUrl = Annotated[
     str, Field(min_length=1, max_length=1024, examples=["https://cdn.shop/p/1.jpg"])
 ]
 AltText = Annotated[str | None, Field(max_length=255)]
+Color = Annotated[str | None, Field(max_length=64, examples=["black"])]
 
 
 class CategoryBase(BaseModel):
@@ -54,9 +53,7 @@ class CategoryRead(CategoryBase, ReadSchema):
 
 
 class CategoryCreate(CategoryBase, WriteSchema):
-    slug: Slug | None = Field(
-        default=None, description="Derived from the name when omitted"
-    )
+    slug: Slug | None = Field(default=None, description="Derived from the name when omitted")
     is_active: bool = True
     parent_id: uuid.UUID | None = None
 
@@ -85,9 +82,7 @@ class ProductImageCreate(ProductImageBase, WriteSchema):
     variant_id: uuid.UUID | None = Field(
         default=None, description="Photo of this variant only; shared when omitted"
     )
-    position: int | None = Field(
-        default=None, ge=0, description="Appended when omitted"
-    )
+    position: int | None = Field(default=None, ge=0, description="Appended when omitted")
     is_primary: bool = False
 
 
@@ -103,9 +98,7 @@ class ProductVariantBase(BaseModel):
     options: dict[str, str] = Field(
         default_factory=dict, examples=[{"size": "42", "color": "black"}]
     )
-    price: Price | None = Field(
-        default=None, description="Overrides the product price when set"
-    )
+    price: Price | None = Field(default=None, description="Overrides the product price when set")
     stock: Stock = 0
 
 
@@ -121,9 +114,7 @@ class ProductVariantRead(ProductVariantBase, ReadSchema):
 
 class ProductVariantCreate(ProductVariantBase, WriteSchema):
     is_active: bool = True
-    position: int | None = Field(
-        default=None, ge=0, description="Appended when omitted"
-    )
+    position: int | None = Field(default=None, ge=0, description="Appended when omitted")
 
 
 class ProductVariantUpdate(WriteSchema):
@@ -144,6 +135,8 @@ class ProductBase(BaseModel):
     sku: Sku
     stock: Stock = 0
     audience: Audience = Audience.UNISEX
+    formality: Formality | None = None
+    color: Color = None
 
 
 class ProductRead(ProductBase, ReadSchema):
@@ -160,9 +153,7 @@ class ProductRead(ProductBase, ReadSchema):
 
 class ProductCreate(ProductBase, WriteSchema):
     category_id: uuid.UUID
-    slug: Slug | None = Field(
-        default=None, description="Derived from the name when omitted"
-    )
+    slug: Slug | None = Field(default=None, description="Derived from the name when omitted")
     is_active: bool = True
     images: list[ProductImageCreate] = []
     variants: list[ProductVariantCreate] = []
@@ -179,6 +170,8 @@ class ProductUpdate(WriteSchema):
     slug: Slug | None = None
     is_active: bool | None = None
     audience: Audience | None = None
+    formality: Formality | None = None
+    color: Color = None
 
 
 CategoryPage = Page[CategoryRead]

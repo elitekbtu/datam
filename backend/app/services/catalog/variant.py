@@ -64,9 +64,7 @@ class VariantService(
             position=len(product.variants) if position is None else position,
         )
 
-    async def build(
-        self, db: AsyncSession, payloads: list[dict[str, Any]]
-    ) -> list[ProductVariant]:
+    async def build(self, db: AsyncSession, payloads: list[dict[str, Any]]) -> list[ProductVariant]:
         """Rows for the variants sent alongside a brand new product."""
         built: list[ProductVariant] = []
         taken: set[str] = set()

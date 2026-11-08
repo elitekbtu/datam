@@ -10,12 +10,18 @@ from app.services.stylist.replies import (
     known_codes,
     proposed_total,
 )
-from utils.enums import Audience
+from utils.enums import Audience, Formality
 
 AUDIENCE_LABELS: Final = {
     Audience.WOMEN: "женское",
     Audience.MEN: "мужское",
     Audience.UNISEX: "унисекс",
+}
+
+FORMALITY_LABELS: Final = {
+    Formality.CASUAL: "повседневный стиль",
+    Formality.SMART_CASUAL: "smart casual",
+    Formality.FORMAL: "строгий стиль",
 }
 
 #: Step 1: which kinds of items the shopper asked to buy.
@@ -55,20 +61,21 @@ def catalog_line(code: str, offer: Offer) -> str:
     product = offer.product
     description = " ".join((product.description or "").split())[:140]
     return " | ".join(
-        (
+        part
+        for part in (
             code,
             product.name,
             product.category.name,
             AUDIENCE_LABELS[product.audience],
+            FORMALITY_LABELS.get(product.formality, ""),
             tenge(offer.price),
             description,
         )
+        if part
     )
 
 
-def outfit_request(
-    lines: list[str], wanted_words: list[str], budget: Decimal, request: str
-) -> str:
+def outfit_request(lines: list[str], wanted_words: list[str], budget: Decimal, request: str) -> str:
     task = (
         f"Клиенту нужны только: {', '.join(wanted_words)}. "
         "Возьми по одной вещи каждого вида и ничего больше."
@@ -82,9 +89,7 @@ def outfit_request(
     )
 
 
-def correction(
-    suggestion: Suggestion, offered: dict[str, Candidate], budget: Decimal
-) -> str:
+def correction(suggestion: Suggestion, offered: dict[str, Candidate], budget: Decimal) -> str:
     """Tell the model what was wrong with its outfit so it can try again."""
     total = proposed_total(suggestion, offered)
     if not known_codes(suggestion, offered):

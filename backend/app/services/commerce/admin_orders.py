@@ -41,9 +41,7 @@ async def list_orders(
     if status is not None:
         conditions.append(Order.status == status.value)
 
-    total = (
-        await db.scalar(select(func.count()).select_from(Order).where(*conditions)) or 0
-    )
+    total = await db.scalar(select(func.count()).select_from(Order).where(*conditions)) or 0
     rows = (
         (
             await db.scalars(
@@ -66,11 +64,7 @@ async def list_orders(
 
 
 async def read_order(db: AsyncSession, order_id: uuid.UUID) -> AdminOrderRead:
-    order = (
-        (await db.scalars(select(Order).where(Order.id == order_id)))
-        .unique()
-        .one_or_none()
-    )
+    order = (await db.scalars(select(Order).where(Order.id == order_id))).unique().one_or_none()
     if order is None:
         raise NotFound("Order not found")
     return AdminOrderRead.model_validate(order)
@@ -119,9 +113,7 @@ async def update_status(
             model = ProductVariant if item.variant_id else Product
             target_id = item.variant_id or item.product_id
             await db.execute(
-                update(model)
-                .where(model.id == target_id)
-                .values(stock=model.stock + item.quantity)
+                update(model).where(model.id == target_id).values(stock=model.stock + item.quantity)
             )
 
     order.status = status.value

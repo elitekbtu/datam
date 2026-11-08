@@ -16,9 +16,7 @@ router = APIRouter(
     dependencies=[Depends(require_admin)],
 )
 
-Upload = Annotated[
-    UploadFile, File(description=f"One of: {', '.join(sorted(IMAGE_TYPES))}")
-]
+Upload = Annotated[UploadFile, File(description=f"One of: {', '.join(sorted(IMAGE_TYPES))}")]
 VariantField = Annotated[
     uuid.UUID | None,
     Form(description="Photo of this variant only; shared when omitted"),
@@ -32,9 +30,7 @@ AltTextField = Annotated[str | None, Form(max_length=255)]
     status_code=status.HTTP_201_CREATED,
     summary="Add a photo that is already hosted somewhere",
 )
-async def add_image(
-    product: TargetProduct, payload: ProductImageCreate, db: DbSession
-) -> Product:
+async def add_image(product: TargetProduct, payload: ProductImageCreate, db: DbSession) -> Product:
     return await gallery.add(db, product, payload)
 
 
@@ -63,16 +59,12 @@ async def upload_image(
 
 
 @router.delete("/{image_id}", response_model=ProductRead, summary="Remove a photo")
-async def remove_image(
-    product: TargetProduct, image_id: uuid.UUID, db: DbSession
-) -> Product:
+async def remove_image(product: TargetProduct, image_id: uuid.UUID, db: DbSession) -> Product:
     return await gallery.remove(db, product, image_id)
 
 
 @router.put("/order", response_model=ProductRead, summary="Reorder one gallery")
-async def reorder_images(
-    product: TargetProduct, payload: ImageOrder, db: DbSession
-) -> Product:
+async def reorder_images(product: TargetProduct, payload: ImageOrder, db: DbSession) -> Product:
     return await gallery.reorder(db, product, payload.image_ids)
 
 
@@ -81,7 +73,5 @@ async def reorder_images(
     response_model=ProductRead,
     summary="Make a photo the main one of its gallery",
 )
-async def set_primary_image(
-    product: TargetProduct, image_id: uuid.UUID, db: DbSession
-) -> Product:
+async def set_primary_image(product: TargetProduct, image_id: uuid.UUID, db: DbSession) -> Product:
     return await gallery.set_primary(db, product, image_id)

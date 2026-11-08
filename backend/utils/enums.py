@@ -32,6 +32,12 @@ class Audience(StrEnum):
     UNISEX = "unisex"
 
 
+class Formality(StrEnum):
+    CASUAL = "casual"
+    SMART_CASUAL = "smart_casual"
+    FORMAL = "formal"
+
+
 class ProductSort(StrEnum):
     NEWEST = "newest"
     OLDEST = "oldest"

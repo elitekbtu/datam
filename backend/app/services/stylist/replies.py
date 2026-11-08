@@ -115,9 +115,7 @@ def known_codes(suggestion: Suggestion, candidates: dict[str, Candidate]) -> lis
     return list(dict.fromkeys(c for c, _ in suggestion.picks if c in candidates))
 
 
-def proposed_total(
-    suggestion: Suggestion, candidates: dict[str, Candidate]
-) -> Decimal:
+def proposed_total(suggestion: Suggestion, candidates: dict[str, Candidate]) -> Decimal:
     """What the model's own picks add up to, before any are dropped."""
     codes = known_codes(suggestion, candidates)
     return sum((candidates[code].price for code in codes), Decimal(0))

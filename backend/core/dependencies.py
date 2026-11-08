@@ -14,15 +14,14 @@ from utils.enums import UserRole
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]
 
+
 @dataclass
 class Pagination:
     limit: Annotated[int, Query(ge=1, le=MAX_PAGE_SIZE)] = DEFAULT_PAGE_SIZE
     offset: Annotated[int, Query(ge=0)] = 0
 
 
-async def get_current_user_optional(
-    db: DbSession, request: Request
-) -> User | None:
+async def get_current_user_optional(db: DbSession, request: Request) -> User | None:
     token = request.cookies.get(ACCESS_COOKIE)
     if not token:
         return None

@@ -23,9 +23,7 @@ def group_of(offer: Offer, groups: list[Group]) -> Group | None:
     return next((g for g in groups if offer.product.category_id in g.category_ids), None)
 
 
-def resolve(
-    want: Wanted, categories: list[Category], offers: list[Offer]
-) -> Category | None:
+def resolve(want: Wanted, categories: list[Category], offers: list[Offer]) -> Category | None:
     """The category the model named, or failing that, one the word points to."""
     by_name = {category.name.casefold(): category for category in categories}
     if found := by_name.get(want.category.casefold()):
@@ -41,9 +39,7 @@ def resolve(
     )
 
 
-async def understand(
-    request: str, categories: list[Category], offers: list[Offer]
-) -> list[Group]:
+async def understand(request: str, categories: list[Category], offers: list[Offer]) -> list[Group]:
     """Which kinds of items the shopper asked for; empty for a whole outfit."""
     reply = await ollama.chat_json(
         UNDERSTAND_PROMPT,

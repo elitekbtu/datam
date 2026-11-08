@@ -32,7 +32,7 @@ class ProductService(CRUDService[Product, ProductRead, ProductCreate, ProductUpd
 
     model = Product
     read_schema = ProductRead
-    nullable_fields = frozenset({"description"})
+    nullable_fields = frozenset({"description", "formality", "color"})
     unique_fields = ("slug", "sku")
     slug_field = "slug"
     order_by = SORT_ORDERS[ProductSort.NEWEST]
@@ -61,9 +61,7 @@ class ProductService(CRUDService[Product, ProductRead, ProductCreate, ProductUpd
             galleries.setdefault(image.variant_id, []).append(image)
 
         for gallery in galleries.values():
-            primary = next(
-                (image for image in gallery if image.is_primary), gallery[0]
-            )
+            primary = next((image for image in gallery if image.is_primary), gallery[0])
             for position, image in enumerate(gallery):
                 image.position = position
                 image.is_primary = image is primary
@@ -84,9 +82,7 @@ class ProductService(CRUDService[Product, ProductRead, ProductCreate, ProductUpd
         if payloads := changes.pop("variants", None):
             changes["variants"] = await variants.build(db, payloads)
         if images := changes.pop("images", None):
-            changes["gallery"] = self.arrange(
-                [ProductImage(**image) for image in images]
-            )
+            changes["gallery"] = self.arrange([ProductImage(**image) for image in images])
         return await super().prepare(db, changes, instance)
 
     def variant_matches(self, *conditions: Any) -> Any:

@@ -23,8 +23,6 @@ async def list_categories(
     )
 
 
-@router.get(
-    "/{key}", response_model=CategoryRead, summary="Read a category by id or slug"
-)
+@router.get("/{key}", response_model=CategoryRead, summary="Read a category by id or slug")
 async def read_category(key: str, db: DbSession) -> Category:
     return await categories.by_key(db, key, active_only=True)
