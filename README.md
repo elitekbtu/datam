@@ -7,7 +7,7 @@
 | Магазин | [localhost](http://localhost) |
 | Админка | [localhost/admin](http://localhost/admin) |
 | pgAdmin | [localhost/pgadmin](http://localhost/pgadmin) |
-| Документация API | [localhost/docs](http://localhost/docs) |
+| Документация API | [localhost/docs](http://localhost/docs) (только при `DEBUG=true`) |
 
 ## Быстрый запуск
 
@@ -19,12 +19,14 @@ cp .env.example .env
 
 В `.env` задайте свои значения для `SECRET_KEY`, `POSTGRES_PASSWORD` и `PGADMIN_DEFAULT_PASSWORD`. Для ключа и пароля PostgreSQL подойдут длинные случайные hex-строки: `openssl rand -hex 32`. Пароль PostgreSQL должен быть безопасным для URL, поскольку Compose вставляет его в `DATABASE_URL`.
 
+При `DEBUG=false` (продакшн) backend не запустится, если `SECRET_KEY` короче 32 символов или оставлен по умолчанию, а документация API (`/docs`, `/openapi.json`) отключена.
+
 ```bash
 make up
 make seed
 ```
 
-`make up` собирает и запускает контейнеры; миграции применяются при старте backend. `make seed` добавляет демо-каталог в текущую базу `datam`. Команда идемпотентна: повторный запуск не создаёт дубликаты. Автоматического seed при запуске нет.
+`make up` собирает и запускает контейнеры; миграции применяются при старте backend. `make seed` добавляет демо-каталог из `backend/data/catalog.json` в текущую базу `datam`. Команда идемпотентна: повторный запуск не создаёт дубликаты, а у существующих товаров только обновляет теги стиля и цвета. Автоматического seed при запуске нет.
 
 ## ИИ-стилист
 
@@ -37,7 +39,7 @@ ollama pull qwen3.5:2b   # один раз, около 2,7 ГБ
 ollama serve             # если Ollama не запущена как приложение
 ```
 
-Модель выбирает вещи из каталога, который ей передаёт backend. Backend сам проверяет ответ: оставляет только существующие товары, не больше одной вещи из категории, и укладывает образ в бюджет. Если модель вышла за рамки, её один раз просят исправиться. Модель и таймаут задаются в `.env` через `OLLAMA_MODEL` и `OLLAMA_TIMEOUT_SECONDS`. Если Ollama не запущена, API отвечает `503`, а страница показывает понятную ошибку.
+Модель выбирает вещи из каталога, который ей передаёт backend. Backend сам проверяет ответ: оставляет только существующие товары, не больше одной вещи из категории, и укладывает образ в бюджет. Для строгого повода (собеседование, свадьба, деловая встреча) вещи со стилем «повседневный» в подбор не попадают; стиль товара задаётся в админке. Если модель вышла за рамки, её один раз просят исправиться. Модель и таймаут задаются в `.env` через `OLLAMA_MODEL` и `OLLAMA_TIMEOUT_SECONDS`. Если Ollama не запущена, API отвечает `503`, а страница показывает понятную ошибку.
 
 ## Доступ к админке
 
@@ -63,6 +65,10 @@ UPDATE users SET role = 'admin' WHERE email = 'you@example.com';
 | `make shell` | Открывает shell в backend |
 | `make migrate` | Применяет миграции вручную |
 | `make seed` | Добавляет демо-каталог в текущую базу |
+| `make test` | Запускает тесты backend в контейнере на отдельной базе `datam_test` |
+| `make lint` | Проверяет стиль backend через ruff (нужен установленный `ruff`) |
+| `make format` | Форматирует backend через ruff |
+| `make lint-frontend` | Проверяет фронтенд: ESLint и сборку с проверкой типов |
 | `make build` | Пересобирает образы |
 | `make clean` | Удаляет локальные кеши Python и инструментов |
 | `make reset` | Удаляет контейнеры и **все тома проекта**, включая базу данных |
@@ -80,7 +86,8 @@ UPDATE users SET role = 'admin' WHERE email = 'you@example.com';
 | `backend/app/routes` | Публичные и админские HTTP-маршруты |
 | `backend/app/services` | Логика каталога, заказов и аккаунтов |
 | `backend/database/migrations` | Миграции Alembic |
-| `backend/seed.py` | Демо-каталог |
+| `backend/seed.py`, `backend/data/catalog.json` | Загрузка демо-каталога и сами данные |
+| `.github/workflows/ci.yml` | CI: ruff, тесты backend, ESLint и сборка фронтенда на каждый PR |
 
 Админские маршруты API: `/api/admin/catalog/products`, `/api/admin/catalog/categories`, `/api/admin/users` и `/api/admin/orders`. Страницы фронтенда используют адреса `/admin/...`.
 

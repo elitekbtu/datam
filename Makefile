@@ -2,7 +2,7 @@ COMPOSE := docker compose
 PRUNE := \( -name .git -o -name node_modules -o -name .venv \) -prune -o
 
 .DEFAULT_GOAL := help
-.PHONY: help build up down reset restart logs ps shell migrate seed clean
+.PHONY: help build up down reset restart logs ps shell migrate seed test lint format lint-frontend clean
 
 help:
 	@echo "make build    build both images"
@@ -15,6 +15,10 @@ help:
 	@echo "make shell    open a shell in the backend container"
 	@echo "make migrate  run alembic upgrade head in the backend container"
 	@echo "make seed     seed the current backend database"
+	@echo "make test     run backend tests in the container (uses a disposable datam_test database)"
+	@echo "make lint     check backend style with ruff (needs ruff installed locally)"
+	@echo "make format   format backend code with ruff"
+	@echo "make lint-frontend  run eslint and the type-checked build in the frontend build image"
 	@echo "make clean    remove python and tooling cache files"
 
 build:
@@ -46,6 +50,23 @@ migrate:
 
 seed:
 	$(COMPOSE) exec backend python seed.py
+
+test:
+	$(COMPOSE) exec -T postgres sh -c 'psql -U "$$POSTGRES_USER" -d postgres -tAc \
+		"SELECT 1 FROM pg_database WHERE datname = '\''datam_test'\''" | grep -q 1 \
+		|| createdb -U "$$POSTGRES_USER" datam_test'
+	$(COMPOSE) exec -T backend sh -c 'TEST_URL="$${DATABASE_URL%/*}/datam_test"; \
+		DATABASE_URL="$$TEST_URL" TEST_DATABASE_URL="$$TEST_URL" python -m unittest discover -s tests'
+
+lint:
+	cd backend && ruff check . && ruff format --check .
+
+format:
+	cd backend && ruff format . && ruff check --fix .
+
+lint-frontend:
+	docker build --target build -f dockerfiles/frontend.Dockerfile -t datam-frontend-build .
+	docker run --rm datam-frontend-build npm run lint
 
 clean:
 	@find . $(PRUNE) -type d \( -name __pycache__ -o -name .pytest_cache -o -name .mypy_cache -o -name .ruff_cache \) -exec rm -rf {} +
