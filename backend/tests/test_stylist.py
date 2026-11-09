@@ -1,5 +1,3 @@
-"""Run with ``python -m unittest tests.test_stylist`` from ``backend/``."""
-
 import json
 import os
 import unittest
@@ -117,13 +115,13 @@ class Assemble(unittest.TestCase):
         self.assertEqual(self.codes([("P2", None), ("P3", None)], "500000"), ["P2"])
 
     def test_never_exceeds_budget(self) -> None:
-        # All three cost 209 700; of the pairs that fit, P1 + P2 uses the most budget.
+
         self.assertEqual(
             self.codes([("P1", None), ("P4", None), ("P2", None)], "140000"), ["P1", "P2"]
         )
 
     def test_prefers_more_pieces_over_the_first_pick(self) -> None:
-        # P1 alone fits 120 000, but P4 + P2 makes a fuller outfit for 119 800.
+
         self.assertEqual(
             self.codes([("P1", None), ("P2", None), ("P4", None)], "120000"), ["P2", "P4"]
         )

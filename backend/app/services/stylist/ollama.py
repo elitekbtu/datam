@@ -1,5 +1,3 @@
-"""Thin client for the local Ollama server that powers the stylist."""
-
 import httpx
 
 from app.services.errors import ServiceUnavailable
@@ -10,11 +8,10 @@ async def chat_json(system: str, messages: list[dict[str, str]]) -> str:
     body = {
         "model": settings.OLLAMA_MODEL,
         "stream": False,
-        # Thinking makes a small model take minutes instead of seconds.
         "think": False,
         "format": "json",
         "keep_alive": "10m",
-        "options": {"temperature": 0.3},
+        "options": {"temperature": 0.3, "num_predict": 1200},
         "messages": [{"role": "system", "content": system}, *messages],
     }
     try:
@@ -31,4 +28,12 @@ async def chat_json(system: str, messages: list[dict[str, str]]) -> str:
         raise ServiceUnavailable(f"Model {settings.OLLAMA_MODEL} is not pulled in Ollama")
     if response.is_error:
         raise ServiceUnavailable("The AI stylist failed to answer")
-    return response.json().get("message", {}).get("content", "")
+    try:
+        data = response.json()
+        message = data.get("message") if isinstance(data, dict) else None
+        content = message.get("content") if isinstance(message, dict) else None
+        if not isinstance(content, str) or not content.strip():
+            raise ValueError("Missing message content")
+    except ValueError as exc:
+        raise ServiceUnavailable("Стилист вернул некорректный ответ. Попробуйте ещё раз.") from exc
+    return content

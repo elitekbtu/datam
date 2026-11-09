@@ -2,7 +2,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Annotated
 
-from pydantic import field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,8 +38,8 @@ class Settings(BaseSettings):
 
     OLLAMA_URL: str = "http://127.0.0.1:11434"
     OLLAMA_MODEL: str = "qwen3.5:2b"
-    OLLAMA_TIMEOUT_SECONDS: float = 120
-    STYLIST_MAX_CANDIDATES: int = 40
+    OLLAMA_TIMEOUT_SECONDS: float = Field(default=120, gt=0, le=120)
+    STYLIST_MAX_CANDIDATES: int = Field(default=40, ge=1, le=100)
 
     CORS_ORIGINS: Annotated[list[str], NoDecode] = []
 

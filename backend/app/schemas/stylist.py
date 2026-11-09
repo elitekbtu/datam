@@ -1,20 +1,25 @@
 import uuid
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StringConstraints
 
 from app.schemas.base import WriteSchema
 from app.schemas.catalog import ProductRead
 from utils.enums import Audience, Currency
 
+ChatText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)]
+
+
+class ChatTurn(WriteSchema):
+    role: Literal["user", "assistant"]
+    content: ChatText
+
 
 class OutfitRequest(WriteSchema):
     prompt: Annotated[
-        str,
+        ChatText,
         Field(
-            min_length=5,
-            max_length=1000,
             examples=["Свидание вечером, на улице +5 и дождь, дресс-код smart casual"],
         ),
     ]
@@ -25,6 +30,7 @@ class OutfitRequest(WriteSchema):
     audience: Audience | None = Field(
         default=None, description="Only offer items for this audience (and unisex)"
     )
+    history: list[ChatTurn] = Field(default_factory=list, max_length=8)
 
 
 class OutfitItem(BaseModel):

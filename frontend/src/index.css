@@ -19,6 +19,12 @@ button:disabled { cursor: not-allowed; }
 img { display: block; }
 ::selection { background: #e7e7e7; color: #111; }
 
+.stylist-panel[open] { animation: stylist-enter .22s ease-out; }
+@keyframes stylist-enter {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
 @layer components {
   .page-container { @apply mx-auto w-full max-w-site px-5 sm:px-8 lg:px-10; }
   .display-title { @apply font-display font-normal text-[42px] leading-[.98] tracking-[-.055em] sm:text-[58px] lg:text-[72px]; }

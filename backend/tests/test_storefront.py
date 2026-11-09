@@ -5,6 +5,7 @@ import tempfile
 import unittest
 import uuid
 from pathlib import Path
+from unittest.mock import AsyncMock, patch
 
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.engine import make_url
@@ -47,6 +48,16 @@ class StorefrontFlow(unittest.IsolatedAsyncioTestCase):
         ) as client:
             token = (await client.get("/api/auth/csrf")).json()["csrf_token"]
             headers = {"X-CSRF-Token": token}
+            self.assertEqual(
+                (
+                    await client.post(
+                        "/api/stylist/outfit",
+                        headers=headers,
+                        json={"prompt": "Образ", "budget": 150000},
+                    )
+                ).status_code,
+                401,
+            )
             self.assertIsNone((await client.post("/api/auth/session", headers=headers)).json())
             categories = (await client.get("/api/catalog/categories?limit=100")).json()["items"]
             self.assertGreaterEqual(len(categories), 8)
@@ -118,6 +129,32 @@ class StorefrontFlow(unittest.IsolatedAsyncioTestCase):
             )
             self.assertEqual(registered.status_code, 201, registered.text)
             self.assertNotIn("access_token", registered.json())
+            with patch(
+                "app.services.stylist.ollama.chat_json",
+                AsyncMock(
+                    side_effect=[
+                        '{"wanted": []}',
+                        '{"title": "На встречу", "items": [{"id": "P1"}]}',
+                    ]
+                ),
+            ) as model:
+                styled = await client.post(
+                    "/api/stylist/outfit",
+                    headers=headers,
+                    json={
+                        "prompt": "Замени обувь",
+                        "budget": 150000,
+                        "audience": "women",
+                        "history": [{"role": "user", "content": "Деловая встреча"}],
+                    },
+                )
+            self.assertEqual(styled.status_code, 200, styled.text)
+            self.assertTrue(styled.json()["items"])
+            self.assertLessEqual(float(styled.json()["total"]), 150000)
+            self.assertTrue(
+                all(item["product"]["formality"] != "casual" for item in styled.json()["items"])
+            )
+            self.assertIn("Деловая встреча", model.call_args_list[0].args[1][0]["content"])
             self.assertIn("datam_access", client.cookies)
             self.assertEqual(
                 (await client.post("/api/auth/session", headers=headers)).json()["username"],

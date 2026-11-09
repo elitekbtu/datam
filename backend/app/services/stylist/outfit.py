@@ -1,5 +1,3 @@
-"""Step 2: let the model choose pieces, then hold its choice to the rules."""
-
 from decimal import Decimal
 from typing import NamedTuple
 
@@ -16,7 +14,6 @@ from app.services.stylist.replies import (
     Pick,
     Suggestion,
     assemble,
-    known_codes,
     parse_reply,
 )
 from app.services.stylist.understand import Group, group_of
@@ -26,14 +23,13 @@ class Outfit(NamedTuple):
     suggestion: Suggestion
     picks: list[Pick]
     offers: dict[str, Offer]
-    #: Every piece the model chose made it in, so its summary still holds.
     complete: bool
 
 
 def offer_codes(
     found: list[Offer], groups: list[Group]
 ) -> tuple[dict[str, Candidate], dict[str, Offer]]:
-    """Number the products ``P1``, ``P2``… so the model can name them reliably."""
+
     offered: dict[str, Candidate] = {}
     by_code: dict[str, Offer] = {}
     for number, offer in enumerate(found, start=1):
@@ -43,7 +39,6 @@ def offer_codes(
             code=code,
             product_id=offer.product.id,
             variant_id=offer.variant.id if offer.variant else None,
-            # Asked-for kinds count as one slot: one pair of shoes, not two.
             category=str(group.root if group else offer.product.category_id),
             price=offer.price,
         )
@@ -60,10 +55,9 @@ async def choose(found: list[Offer], groups: list[Group], request: str, budget: 
     reply = await ollama.chat_json(PICK_PROMPT, messages)
     suggestion = parse_reply(reply)
     picks = assemble(suggestion, offered, budget)
-    complete = len(picks) == len(known_codes(suggestion, offered))
+    complete = len(picks) == len({code for code, _ in suggestion.picks})
 
     if not picks or not complete:
-        # Small models add prices badly; one round of feedback usually fixes it.
         messages += [
             {"role": "assistant", "content": reply},
             {"role": "user", "content": correction(suggestion, offered, budget)},
@@ -72,6 +66,6 @@ async def choose(found: list[Offer], groups: list[Group], request: str, budget: 
         retry_picks = assemble(retry, offered, budget)
         if retry_picks and len(retry_picks) >= len(picks):
             suggestion, picks = retry, retry_picks
-            complete = len(picks) == len(known_codes(retry, offered))
+            complete = len(picks) == len({code for code, _ in retry.picks})
 
     return Outfit(suggestion, picks, by_code, complete)

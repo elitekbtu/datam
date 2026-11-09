@@ -1,5 +1,3 @@
-"""Step 1: which kinds of items the shopper asked to buy, if they named any."""
-
 import uuid
 from decimal import Decimal
 from typing import NamedTuple
@@ -12,8 +10,6 @@ from app.services.stylist.replies import Wanted, parse_wanted, stem
 
 
 class Group(NamedTuple):
-    """The products one word of the request covers, e.g. «обувь» → all shoes."""
-
     word: str
     root: uuid.UUID
     category_ids: frozenset[uuid.UUID]
@@ -24,7 +20,7 @@ def group_of(offer: Offer, groups: list[Group]) -> Group | None:
 
 
 def resolve(want: Wanted, categories: list[Category], offers: list[Offer]) -> Category | None:
-    """The category the model named, or failing that, one the word points to."""
+
     by_name = {category.name.casefold(): category for category in categories}
     if found := by_name.get(want.category.casefold()):
         return found
@@ -40,7 +36,7 @@ def resolve(want: Wanted, categories: list[Category], offers: list[Offer]) -> Ca
 
 
 async def understand(request: str, categories: list[Category], offers: list[Offer]) -> list[Group]:
-    """Which kinds of items the shopper asked for; empty for a whole outfit."""
+
     reply = await ollama.chat_json(
         UNDERSTAND_PROMPT,
         [{"role": "user", "content": understand_request([c.name for c in categories], request)}],
@@ -54,7 +50,7 @@ async def understand(request: str, categories: list[Category], offers: list[Offe
 
 
 def budget_notes(groups: list[Group], offers: list[Offer], budget: Decimal) -> list[str]:
-    """Explain plainly when something the shopper asked for cannot fit."""
+
     notes = []
     cheapest_total = Decimal(0)
     all_fit = True

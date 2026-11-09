@@ -1,5 +1,3 @@
-"""Run with ``python -m unittest tests.test_dress_code`` from ``backend/``."""
-
 import os
 import unittest
 import uuid

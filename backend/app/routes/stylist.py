@@ -4,7 +4,6 @@ from app.schemas.stylist import OutfitRead, OutfitRequest
 from app.services import stylist
 from core.dependencies import DbSession, get_current_user
 
-# Signed-in shoppers only, so anonymous traffic cannot tie up the model.
 router = APIRouter(
     prefix="/stylist",
     tags=["AI Stylist"],
