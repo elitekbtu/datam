@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { Heart, Menu, Search, ShoppingBag, UserRound, X } from 'lucide-react'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { Heart, Menu, MessageCircle, Search, ShoppingBag, UserRound, X } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { cartApi } from '../../../entities/cart'
 import { userApi } from '../../../entities/user'
+import { chatHref } from '../../../shared/lib/chat'
 
 const navigation = [
   { label: 'Женщинам', to: '/catalog?audience=women' },
@@ -17,6 +18,7 @@ const navigation = [
 
 export function SiteHeader() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [search, setSearch] = useState('')
   const [mobileOpen, setMobileOpen] = useState(false)
   const { data: user, isPending: sessionPending } = useQuery({ queryKey: ['user'], queryFn: userApi.session, retry: false })
@@ -28,7 +30,7 @@ export function SiteHeader() {
       <Link to="/" className="shrink-0 text-[23px] font-medium tracking-[.28em] sm:text-[26px]" onClick={() => setMobileOpen(false)}>DATAM</Link>
       <nav aria-label="Основная навигация" className="ml-4 hidden items-center gap-5 text-[12px] xl:gap-7 lg:flex">{navigation.map((item) => <NavLink key={item.label} to={item.to} className="whitespace-nowrap transition-colors hover:text-muted">{item.label}</NavLink>)}</nav>
       <form onSubmit={submit} role="search" className="ml-auto hidden w-[220px] items-center rounded-full bg-mist px-3 py-2 lg:flex xl:w-[250px]"><Search size={16} className="text-muted" /><input value={search} onChange={(event) => setSearch(event.target.value)} aria-label="Поиск товаров" placeholder="Поиск товаров..." className="w-full bg-transparent pl-2 text-xs outline-none placeholder:text-[#98989d]" /></form>
-      <div className="ml-auto flex items-center gap-3 sm:gap-5 lg:ml-3"><Link aria-label={user ? 'Личный кабинет' : 'Войти'} to={user ? '/account' : '/login'} className="link-hover"><UserRound size={21} strokeWidth={1.6} /></Link><Link aria-label="Избранное" to="/favorites" className="link-hover"><Heart size={22} strokeWidth={1.6} /></Link><Link aria-label={`Корзина, товаров: ${cart?.count ?? 0}`} to="/cart" className="relative link-hover"><ShoppingBag size={21} strokeWidth={1.6} />{Boolean(cart?.count) && <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-ink px-1 text-[9px] leading-none text-white">{cart?.count}</span>}</Link></div>
+      <div className="ml-auto flex items-center gap-3 sm:gap-5 lg:ml-3"><Link aria-label="Открыть чат" to={chatHref(location.pathname, location.search)} className="link-hover flex items-center gap-2 text-xs font-medium"><MessageCircle size={21} strokeWidth={1.6} /><span className="hidden sm:inline">Чат</span></Link><Link aria-label={user ? 'Личный кабинет' : 'Войти'} to={user ? '/account' : '/login'} className="link-hover"><UserRound size={21} strokeWidth={1.6} /></Link><Link aria-label="Избранное" to="/favorites" className="link-hover"><Heart size={22} strokeWidth={1.6} /></Link><Link aria-label={`Корзина, товаров: ${cart?.count ?? 0}`} to="/cart" className="relative link-hover"><ShoppingBag size={21} strokeWidth={1.6} />{Boolean(cart?.count) && <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-ink px-1 text-[9px] leading-none text-white">{cart?.count}</span>}</Link></div>
     </div>
     {mobileOpen && <div className="border-t border-line bg-white p-5 lg:hidden"><form onSubmit={submit} role="search" className="mb-5 flex items-center bg-mist px-4 py-3"><Search size={17} /><input className="w-full bg-transparent pl-3 text-sm outline-none" placeholder="Поиск товаров" value={search} onChange={(event) => setSearch(event.target.value)} /></form><nav className="grid gap-1" aria-label="Мобильная навигация">{navigation.map((item) => <Link key={item.label} onClick={() => setMobileOpen(false)} to={item.to} className="border-b border-line py-3 text-sm">{item.label}</Link>)}</nav></div>}
   </header>

@@ -1,17 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Sparkles, X } from 'lucide-react'
+import { Maximize2, MessageCircle, Minimize2, X } from 'lucide-react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { userApi } from '../../../entities/user'
+import { CHAT_HIDDEN_PATHS, chatHref } from '../../../shared/lib/chat'
 import { StylistChat } from './StylistChat'
 
 export function StylistPanel() {
   const { pathname, search } = useLocation()
   const [params, setParams] = useSearchParams()
   const [expanded, setExpanded] = useState(false)
+  const [wide, setWide] = useState(false)
   const dialog = useRef<HTMLDialogElement>(null)
   const user = useQuery({ queryKey: ['user'], queryFn: userApi.session, retry: false })
-  const hidden = /^\/(admin|login|register|checkout)(\/|$)/.test(pathname)
+  const hidden = CHAT_HIDDEN_PATHS.test(pathname)
   const open = !hidden && (expanded || params.get('stylist') === 'open')
 
   function close() {
@@ -37,9 +39,7 @@ export function StylistPanel() {
     }
   }, [open])
 
-  const returnParams = new URLSearchParams(search)
-  returnParams.set('stylist', 'open')
-  const loginUrl = `/login?returnTo=${encodeURIComponent(`${pathname}?${returnParams}`)}`
+  const loginUrl = `/login?returnTo=${encodeURIComponent(chatHref(pathname, search))}`
 
   return (
     <>
@@ -50,10 +50,15 @@ export function StylistPanel() {
           aria-haspopup="dialog"
           aria-expanded={open}
           aria-controls="stylist-panel"
-          className="fixed bottom-5 right-5 z-40 flex min-h-12 items-center gap-3 rounded-full border border-line bg-white px-5 text-xs shadow-panel transition hover:-translate-y-0.5 hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 sm:bottom-7 sm:right-8"
+          className="fixed bottom-5 right-5 z-40 flex items-center gap-3 rounded-full bg-ink py-2.5 pl-2.5 pr-6 text-left text-white shadow-tactile transition hover:-translate-y-0.5 hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink sm:bottom-8 sm:right-8"
         >
-          <Sparkles size={17} strokeWidth={1.5} />
-          <span>ИИ-стилист</span>
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10">
+            <MessageCircle size={21} strokeWidth={1.6} />
+          </span>
+          <span className="flex flex-col leading-tight">
+            <span className="text-sm font-medium">Чат</span>
+            <span className="mt-0.5 hidden text-[11px] text-white/70 sm:block">Подберём образ</span>
+          </span>
         </button>
       )}
       <dialog
@@ -67,27 +72,38 @@ export function StylistPanel() {
         onClick={(event) => {
           if (event.target === event.currentTarget) close()
         }}
-        className="stylist-panel fixed inset-y-0 left-auto right-0 m-0 h-dvh max-h-none w-full max-w-[460px] border-0 bg-white p-0 text-ink shadow-panel backdrop:bg-black/20"
+        className={`stylist-panel fixed inset-y-0 left-auto right-0 m-0 h-dvh max-h-none w-full max-w-full border-0 bg-white p-0 text-ink shadow-panel transition-[max-width] duration-200 backdrop:bg-black/20 sm:max-w-[540px] ${
+          wide ? 'lg:max-w-[880px]' : 'lg:max-w-[600px]'
+        }`}
       >
         <div className="flex h-full flex-col" onClick={(event) => event.stopPropagation()}>
-          <header className="flex shrink-0 items-center justify-between border-b border-line px-6 py-5">
-            <div className="flex items-center gap-3">
-              <Sparkles size={20} strokeWidth={1.3} />
-              <div>
-                <h2 id="stylist-title" className="text-sm font-medium">
-                  Ваш ИИ-стилист
-                </h2>
-                <p className="mt-1 text-[11px] text-muted">Персональный подбор · DATAM</p>
-              </div>
+          <header className="flex shrink-0 items-center justify-between gap-4 border-b border-line px-6 py-5">
+            <div>
+              <h2 id="stylist-title" className="font-display text-[28px] leading-none tracking-[-.03em]">
+                Чат
+              </h2>
+              <p className="mt-2 text-[11px] text-muted">Персональный подбор · DATAM</p>
             </div>
-            <button
-              type="button"
-              onClick={close}
-              aria-label="Закрыть чат"
-              className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-mist focus-visible:outline"
-            >
-              <X size={20} strokeWidth={1.5} />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setWide(!wide)}
+                aria-pressed={wide}
+                aria-label={wide ? 'Свернуть чат' : 'Развернуть чат'}
+                title={wide ? 'Свернуть' : 'Развернуть'}
+                className="hidden h-10 w-10 items-center justify-center rounded-full transition hover:bg-mist focus-visible:outline lg:flex"
+              >
+                {wide ? <Minimize2 size={18} strokeWidth={1.5} /> : <Maximize2 size={18} strokeWidth={1.5} />}
+              </button>
+              <button
+                type="button"
+                onClick={close}
+                aria-label="Закрыть чат"
+                className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-mist focus-visible:outline"
+              >
+                <X size={20} strokeWidth={1.5} />
+              </button>
+            </div>
           </header>
           {user.isPending ? (
             <p role="status" className="p-6 text-sm text-muted">
