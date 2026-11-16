@@ -28,9 +28,7 @@ export function VariantEditor({ productId, variant, onChanged }: VariantEditorPr
   const [editing, setEditing] = useState(!variant)
   const save = useMutation({
     mutationFn: (body: VariantInput) =>
-      variant
-        ? adminApi.updateVariant(productId, variant.id, body)
-        : adminApi.createVariant(productId, body),
+      variant ? adminApi.updateVariant(productId, variant.id, body) : adminApi.createVariant(productId, body),
     onSuccess: () => {
       onChanged()
       if (!variant) setEditing(false)
@@ -55,11 +53,7 @@ export function VariantEditor({ productId, variant, onChanged }: VariantEditorPr
             Изменить
           </button>
           {variant && (
-            <ConfirmButton
-              label="Удалить"
-              disabled={remove.isPending}
-              onConfirm={() => remove.mutate()}
-            />
+            <ConfirmButton label="Удалить" disabled={remove.isPending} onConfirm={() => remove.mutate()} />
           )}
         </div>
         <FormError error={remove.error} />

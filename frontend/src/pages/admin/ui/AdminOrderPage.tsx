@@ -47,7 +47,9 @@ function OrderItems({ order }: { order: AdminOrder }) {
           return (
             <div key={product.id} className="flex gap-4 py-5">
               <div className="h-24 w-20 shrink-0 bg-mist">
-                {product.image_url && <img src={product.image_url} alt="" className="h-full w-full object-cover" />}
+                {product.image_url && (
+                  <img src={product.image_url} alt="" className="h-full w-full object-cover" />
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">{product.name}</p>
@@ -59,7 +61,9 @@ function OrderItems({ order }: { order: AdminOrder }) {
                   {product.quantity} шт. × {money(product.unit_price, order.currency)}
                 </p>
               </div>
-              <strong className="text-right text-sm font-medium">{money(product.total, order.currency)}</strong>
+              <strong className="text-right text-sm font-medium">
+                {money(product.total, order.currency)}
+              </strong>
             </div>
           )
         })}
@@ -80,16 +84,44 @@ function DeliveryForm({ order, saving, error, onSubmit, onCancel }: DeliveryForm
   return (
     <form onSubmit={onSubmit} className="mt-5 space-y-4">
       <Field label="Получатель *" className="block">
-        <input name="full_name" className="field" required minLength={2} maxLength={128} defaultValue={order.full_name} />
+        <input
+          name="full_name"
+          className="field"
+          required
+          minLength={2}
+          maxLength={128}
+          defaultValue={order.full_name}
+        />
       </Field>
       <Field label="Телефон *" className="block">
-        <input name="phone" className="field" required minLength={7} maxLength={32} defaultValue={order.phone} />
+        <input
+          name="phone"
+          className="field"
+          required
+          minLength={7}
+          maxLength={32}
+          defaultValue={order.phone}
+        />
       </Field>
       <Field label="Город *" className="block">
-        <input name="city" className="field" required minLength={2} maxLength={128} defaultValue={order.city} />
+        <input
+          name="city"
+          className="field"
+          required
+          minLength={2}
+          maxLength={128}
+          defaultValue={order.city}
+        />
       </Field>
       <Field label="Адрес *" className="block">
-        <input name="address" className="field" required minLength={5} maxLength={255} defaultValue={order.address} />
+        <input
+          name="address"
+          className="field"
+          required
+          minLength={5}
+          maxLength={255}
+          defaultValue={order.address}
+        />
       </Field>
       <Field label="Индекс" className="block">
         <input name="postal_code" className="field" maxLength={16} defaultValue={order.postal_code || ''} />
@@ -180,9 +212,11 @@ export function AdminOrderPage() {
 
   return (
     <section>
-      <Link to="/admin/orders" className="mb-5 inline-flex items-center gap-2 text-xs text-muted hover:text-ink">
-        <ArrowLeft size={15} />
-        К заказам
+      <Link
+        to="/admin/orders"
+        className="mb-5 inline-flex items-center gap-2 text-xs text-muted hover:text-ink"
+      >
+        <ArrowLeft size={15} />К заказам
       </Link>
       <PageHeading title={`Заказ № ${item.id.slice(0, 8).toUpperCase()}`} />
       <p className="break-all text-xs text-muted">{item.id}</p>
@@ -199,7 +233,12 @@ export function AdminOrderPage() {
           {available.length > 0 && (
             <div className="flex flex-wrap items-center gap-3">
               {forward.map((status) => (
-                <Button key={status} type="button" disabled={save.isPending} onClick={() => save.mutate(status)}>
+                <Button
+                  key={status}
+                  type="button"
+                  disabled={save.isPending}
+                  onClick={() => save.mutate(status)}
+                >
                   {orderStatusLabels[status]}
                 </Button>
               ))}

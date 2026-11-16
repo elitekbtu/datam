@@ -3,5 +3,5 @@ import type { Outfit, OutfitRequest } from '../model/types'
 
 export const stylistApi = {
   outfit: (payload: OutfitRequest, signal: AbortSignal) =>
-    api<Outfit>('/stylist/outfit', { method: 'POST', body: payload, signal })
+    api<Outfit>('/stylist/outfit', { method: 'POST', body: payload, signal }),
 }

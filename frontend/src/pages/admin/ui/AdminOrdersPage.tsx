@@ -26,7 +26,9 @@ function OrderRow({ order }: { order: AdminOrder }) {
         <p className="mt-1 text-muted">{order.phone}</p>
       </div>
       <span className="min-w-[100px] text-xs text-muted">{orderStatusLabels[order.status]}</span>
-      <strong className="min-w-[100px] text-right text-sm font-medium">{money(order.total, order.currency)}</strong>
+      <strong className="min-w-[100px] text-right text-sm font-medium">
+        {money(order.total, order.currency)}
+      </strong>
     </Link>
   )
 }
@@ -95,7 +97,9 @@ export function AdminOrdersPage() {
       ) : (
         <>
           <div className="divide-y divide-line border-y border-line">
-            {orders.data?.items.map((order) => <OrderRow key={order.id} order={order} />)}
+            {orders.data?.items.map((order) => (
+              <OrderRow key={order.id} order={order} />
+            ))}
             {!orders.data?.items.length && (
               <p className="py-12 text-center text-sm text-muted">Заказы не найдены.</p>
             )}

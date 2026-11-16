@@ -116,7 +116,9 @@ export function CatalogFilters({ categories, params, setParams }: CatalogFilters
                 type="button"
                 onClick={() => set('category', category.slug)}
                 className={`min-w-0 flex-1 text-left text-xs ${depth === 0 ? 'font-medium' : ''} ${
-                  active === category.slug ? 'text-ink underline underline-offset-4' : 'text-muted hover:text-ink'
+                  active === category.slug
+                    ? 'text-ink underline underline-offset-4'
+                    : 'text-muted hover:text-ink'
                 }`}
               >
                 {category.name}

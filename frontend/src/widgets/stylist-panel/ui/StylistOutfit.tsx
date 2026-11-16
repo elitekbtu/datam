@@ -18,7 +18,7 @@ function OutfitProduct({ item, onNavigate }: { item: OutfitItem; onNavigate: () 
   const image = product.images.find((image) => image.is_primary) ?? product.images[0]
   const add = useMutation({
     mutationFn: () => cartApi.add(product.id, size || null),
-    onSuccess: (cart) => client.setQueryData(['cart'], cart)
+    onSuccess: (cart) => client.setQueryData(['cart'], cart),
   })
 
   return (

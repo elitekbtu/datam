@@ -150,10 +150,14 @@ export function CatalogPage() {
         </aside>
         <div className="min-w-0">
           <div className="mb-5 flex items-center justify-between gap-3">
-            <p className="text-xs text-muted">{isPending ? 'Ищем товары...' : `${data?.total ?? 0} товаров`}</p>
+            <p className="text-xs text-muted">
+              {isPending ? 'Ищем товары...' : `${data?.total ?? 0} товаров`}
+            </p>
             <div className="flex items-center gap-3">
               <details className="relative lg:hidden">
-                <summary className="cursor-pointer list-none border border-line px-3 py-2 text-xs">Фильтры</summary>
+                <summary className="cursor-pointer list-none border border-line px-3 py-2 text-xs">
+                  Фильтры
+                </summary>
                 <div className="absolute right-0 top-11 z-20 w-[min(90vw,320px)] border border-line bg-white p-5 shadow-panel">
                   <CatalogFilters categories={categories} params={params} setParams={setParams} />
                 </div>
@@ -183,7 +187,10 @@ export function CatalogPage() {
           ) : data?.items.length ? (
             <ProductGrid products={data.items} />
           ) : (
-            <EmptyState title="Ничего не найдено" body="Попробуйте изменить фильтры или посмотреть всю коллекцию." />
+            <EmptyState
+              title="Ничего не найдено"
+              body="Попробуйте изменить фильтры или посмотреть всю коллекцию."
+            />
           )}
           <PageNav page={page} lastPage={lastPage} onPage={goToPage} />
         </div>

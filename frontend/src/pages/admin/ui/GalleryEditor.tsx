@@ -178,9 +178,7 @@ export function GalleryEditor({ product, onChanged }: { product: Product; onChan
             Добавить фото
           </Button>
         </form>
-        <FormError
-          error={upload.error || add.error || remove.error || primary.error || reorder.error}
-        />
+        <FormError error={upload.error || add.error || remove.error || primary.error || reorder.error} />
       </div>
     </section>
   )

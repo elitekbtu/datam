@@ -18,9 +18,9 @@ function history(messages: Message[]): OutfitRequest['history'] {
       : [
           message.outfit.title,
           message.outfit.summary,
-          ...message.outfit.items.map(({ product }) => product.name)
+          ...message.outfit.items.map(({ product }) => product.name),
         ].join('. ')
-    ).slice(0, 1000)
+    ).slice(0, 1000),
   }))
 }
 
@@ -60,7 +60,7 @@ export function StylistChat({ open, onNavigate }: { open: boolean; onNavigate: (
     try {
       const outfit = await stylistApi.outfit(
         payload,
-        AbortSignal.any([request.signal, AbortSignal.timeout(135_000)])
+        AbortSignal.any([request.signal, AbortSignal.timeout(135_000)]),
       )
       if (!request.signal.aborted) {
         const id = ++sequence.current
@@ -87,7 +87,7 @@ export function StylistChat({ open, onNavigate }: { open: boolean; onNavigate: (
       prompt,
       budget: Number(budget),
       audience: audience || null,
-      history: history(messages)
+      history: history(messages),
     }
     const id = ++sequence.current
     setMessages((current) => [...current, { id, role: 'user', text: prompt }])
@@ -178,7 +178,7 @@ export function StylistChat({ open, onNavigate }: { open: boolean; onNavigate: (
               </div>
             ) : (
               <StylistOutfit key={message.id} outfit={message.outfit} onNavigate={onNavigate} />
-            )
+            ),
           )}
         </div>
         {pending && (

@@ -101,7 +101,13 @@ function UserForm({ user, onDone }: { user?: User; onDone: () => void }) {
   )
 }
 
-type UserRowProps = { user: User; isSelf: boolean; deleting: boolean; onEdit: () => void; onDelete: () => void }
+type UserRowProps = {
+  user: User
+  isSelf: boolean
+  deleting: boolean
+  onEdit: () => void
+  onDelete: () => void
+}
 
 function UserRow({ user, isSelf, deleting, onEdit, onDelete }: UserRowProps) {
   return (

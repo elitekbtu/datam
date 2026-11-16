@@ -80,7 +80,11 @@ function CategoryForm({ category, all, onDone }: CategoryFormProps) {
           </select>
         </Field>
         <Field label="Описание" className="sm:col-span-2">
-          <textarea name="description" className="field h-24 py-3" defaultValue={category?.description || ''} />
+          <textarea
+            name="description"
+            className="field h-24 py-3"
+            defaultValue={category?.description || ''}
+          />
         </Field>
       </div>
       <label className="mt-4 flex items-center gap-2 text-xs">
@@ -109,7 +113,10 @@ export function AdminCategoriesPage() {
     queryKey: ['admin', 'categories', offset],
     queryFn: () => adminApi.categories(new URLSearchParams({ limit: String(limit), offset: String(offset) })),
   })
-  const all = useQuery({ queryKey: ['admin', 'all-categories'], queryFn: () => adminApi.categories(allParams) })
+  const all = useQuery({
+    queryKey: ['admin', 'all-categories'],
+    queryFn: () => adminApi.categories(allParams),
+  })
   const remove = useMutation({
     mutationFn: adminApi.deleteCategory,
     onSuccess: () => {
@@ -176,7 +183,12 @@ export function AdminCategoriesPage() {
               <p className="py-12 text-center text-sm text-muted">Категорий пока нет.</p>
             )}
           </div>
-          <Pagination total={categories.data?.total ?? 0} offset={offset} limit={limit} onChange={setOffset} />
+          <Pagination
+            total={categories.data?.total ?? 0}
+            offset={offset}
+            limit={limit}
+            onChange={setOffset}
+          />
         </>
       )}
       <FormError error={remove.error} />

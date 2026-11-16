@@ -76,7 +76,10 @@ export function AdminProductsPage() {
   }
 
   const addButton = (
-    <Link to="/admin/products/new" className="inline-flex min-h-11 items-center gap-2 bg-ink px-5 text-sm text-white">
+    <Link
+      to="/admin/products/new"
+      className="inline-flex min-h-11 items-center gap-2 bg-ink px-5 text-sm text-white"
+    >
       <Plus size={17} />
       Добавить товар
     </Link>

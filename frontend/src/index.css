@@ -11,29 +11,72 @@
   -webkit-font-smoothing: antialiased;
 }
 
-html { scroll-behavior: smooth; }
-body { margin: 0; min-width: 320px; }
-button, input, select, textarea { font: inherit; }
-button { cursor: pointer; }
-button:disabled { cursor: not-allowed; }
-img { display: block; }
-::selection { background: #e7e7e7; color: #111; }
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+img {
+  display: block;
+}
+::selection {
+  background: #e7e7e7;
+  color: #111;
+}
 
-.stylist-panel[open] { animation: stylist-enter .22s ease-out; }
+.stylist-panel[open] {
+  animation: stylist-enter 0.22s ease-out;
+}
 @keyframes stylist-enter {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 @layer components {
-  .page-container { @apply mx-auto w-full max-w-site px-5 sm:px-8 lg:px-10; }
-  .display-title { @apply font-display font-normal text-[42px] leading-[.98] tracking-[-.055em] sm:text-[58px] lg:text-[72px]; }
-  .section-title { @apply font-display font-normal text-[36px] leading-[1.04] tracking-[-.045em] sm:text-[45px]; }
-  .field { @apply h-12 w-full border border-line bg-white px-4 text-sm outline-none transition-colors focus:border-ink; }
-  .field-label { @apply mb-2 block text-xs font-medium text-ink; }
-  .link-hover { @apply transition-colors hover:text-muted; }
+  .page-container {
+    @apply mx-auto w-full max-w-site px-5 sm:px-8 lg:px-10;
+  }
+  .display-title {
+    @apply font-display font-normal text-[42px] leading-[.98] tracking-[-.055em] sm:text-[58px] lg:text-[72px];
+  }
+  .section-title {
+    @apply font-display font-normal text-[36px] leading-[1.04] tracking-[-.045em] sm:text-[45px];
+  }
+  .field {
+    @apply h-12 w-full border border-line bg-white px-4 text-sm outline-none transition-colors focus:border-ink;
+  }
+  .field-label {
+    @apply mb-2 block text-xs font-medium text-ink;
+  }
+  .link-hover {
+    @apply transition-colors hover:text-muted;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

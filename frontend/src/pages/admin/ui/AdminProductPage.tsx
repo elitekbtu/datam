@@ -178,14 +178,20 @@ export function AdminProductPage() {
 
   return (
     <section>
-      <Link to="/admin/products" className="mb-5 inline-flex items-center gap-2 text-xs text-muted hover:text-ink">
-        <ArrowLeft size={15} />
-        К товарам
+      <Link
+        to="/admin/products"
+        className="mb-5 inline-flex items-center gap-2 text-xs text-muted hover:text-ink"
+      >
+        <ArrowLeft size={15} />К товарам
       </Link>
       <PageHeading title={isNew ? 'Новый товар' : 'Редактировать товар'} />
       {!categoryList.length && (
         <p className="mb-6 text-sm text-muted">
-          Сначала <Link to="/admin/categories" className="underline">создайте категорию</Link>.
+          Сначала{' '}
+          <Link to="/admin/categories" className="underline">
+            создайте категорию
+          </Link>
+          .
         </p>
       )}
 

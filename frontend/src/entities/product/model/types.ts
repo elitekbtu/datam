@@ -7,12 +7,47 @@ export interface Category {
   is_active: boolean
 }
 
-export interface ProductImage { id: string; url: string; alt_text: string | null; position: number; is_primary: boolean; variant_id: string | null }
-export interface ProductVariant { id: string; name: string; sku: string; options: Record<string, string>; price: string | null; stock: number; is_active: boolean; position: number; images: ProductImage[] }
-export interface Product {
-  id: string; slug: string; name: string; description: string | null; price: string; currency: string
-  sku: string; stock: number; total_stock: number; audience: 'women' | 'men' | 'unisex'
-  formality: 'casual' | 'smart_casual' | 'formal' | null; color: string | null
-  category: Category; images: ProductImage[]; variants: ProductVariant[]; created_at: string; is_active: boolean
+export interface ProductImage {
+  id: string
+  url: string
+  alt_text: string | null
+  position: number
+  is_primary: boolean
+  variant_id: string | null
 }
-export interface Page<T> { items: T[]; total: number; limit: number; offset: number }
+export interface ProductVariant {
+  id: string
+  name: string
+  sku: string
+  options: Record<string, string>
+  price: string | null
+  stock: number
+  is_active: boolean
+  position: number
+  images: ProductImage[]
+}
+export interface Product {
+  id: string
+  slug: string
+  name: string
+  description: string | null
+  price: string
+  currency: string
+  sku: string
+  stock: number
+  total_stock: number
+  audience: 'women' | 'men' | 'unisex'
+  formality: 'casual' | 'smart_casual' | 'formal' | null
+  color: string | null
+  category: Category
+  images: ProductImage[]
+  variants: ProductVariant[]
+  created_at: string
+  is_active: boolean
+}
+export interface Page<T> {
+  items: T[]
+  total: number
+  limit: number
+  offset: number
+}
