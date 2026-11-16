@@ -26,6 +26,13 @@ from app.schemas.user import (
     UserRead,
     UserUpdate,
 )
+from app.schemas.wardrobe import (
+    WardrobeItemCreate,
+    WardrobeItemFromProduct,
+    WardrobeItemPage,
+    WardrobeItemRead,
+    WardrobeItemUpdate,
+)
 
 __all__ = [
     "AdminUserCreate",
@@ -54,5 +61,10 @@ __all__ = [
     "UserPage",
     "UserRead",
     "UserUpdate",
+    "WardrobeItemCreate",
+    "WardrobeItemFromProduct",
+    "WardrobeItemPage",
+    "WardrobeItemRead",
+    "WardrobeItemUpdate",
     "WriteSchema",
 ]

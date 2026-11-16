@@ -2,6 +2,7 @@ from app.models.auth import AuthSession
 from app.models.catalog import Category, Product, ProductImage, ProductVariant
 from app.models.commerce import Cart, CartItem, Favorite, Order, OrderItem
 from app.models.user import User
+from app.models.wardrobe import WardrobeItem
 
 __all__ = [
     "AuthSession",
@@ -15,4 +16,5 @@ __all__ = [
     "ProductImage",
     "ProductVariant",
     "User",
+    "WardrobeItem",
 ]
