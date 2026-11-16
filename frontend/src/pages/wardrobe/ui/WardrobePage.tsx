@@ -32,8 +32,9 @@ export function WardrobePage() {
     queryFn: () => wardrobeApi.list(query),
   })
   const { data: categoryData } = useQuery({ queryKey: ['categories'], queryFn: productApi.categories })
-  const categories = categoryData?.items.filter((category) => category.is_active) ?? []
-  const categoryName = (id: string | null) => categories.find((category) => category.id === id)?.name
+  const allCategories = categoryData?.items ?? []
+  const categories = allCategories.filter((category) => category.is_active)
+  const categoryName = (id: string | null) => allCategories.find((category) => category.id === id)?.name
 
   const setFilter = (name: string, value: string) => setParams(withFilter(params, name, value))
   function goTo(nextPage: number) {
@@ -166,7 +167,7 @@ export function WardrobePage() {
       {editing && (
         <WardrobeItemDialog
           item={editing === 'new' ? undefined : editing}
-          categories={categories}
+          categories={allCategories}
           onClose={() => setEditing(null)}
         />
       )}

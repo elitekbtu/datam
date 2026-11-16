@@ -6,9 +6,8 @@ import { adminApi } from '../../../features/admin'
 import type { Product, ProductImage } from '../../../entities/product'
 import { Button } from '../../../shared/ui/Button'
 import { Field } from '../../../shared/ui/Field'
+import { IMAGE_TYPES } from '../../../shared/lib/upload'
 import { ConfirmButton, FormError } from './AdminParts'
-
-const IMAGE_TYPES = 'image/jpeg,image/png,image/webp,image/avif,image/gif'
 
 type ImageLink = { url: string; alt_text: string | null; variant_id: string | null; is_primary: boolean }
 

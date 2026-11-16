@@ -7,8 +7,7 @@ import { formalityLabels, wardrobeApi } from '../../../entities/wardrobe'
 import type { Formality, WardrobeItem, WardrobeItemPayload } from '../../../entities/wardrobe'
 import { Button } from '../../../shared/ui/Button'
 import { Field } from '../../../shared/ui/Field'
-
-const IMAGE_TYPES = 'image/jpeg,image/png,image/webp,image/avif,image/gif'
+import { IMAGE_TYPES } from '../../../shared/lib/upload'
 
 type Props = { item?: WardrobeItem; categories: Category[]; onClose: () => void }
 
@@ -111,11 +110,13 @@ export function WardrobeItemDialog({ item, categories, onClose }: Props) {
           <Field label="Категория">
             <select name="category_id" className="field" defaultValue={item?.category_id ?? ''}>
               <option value="">Не указана</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
+              {categories
+                .filter((category) => category.is_active || category.id === item?.category_id)
+                .map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
             </select>
           </Field>
           <Field label="Стиль">
