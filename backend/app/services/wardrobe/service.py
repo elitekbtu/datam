@@ -1,7 +1,7 @@
 import uuid
 
 from fastapi import UploadFile
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.wardrobe import WardrobeItem
@@ -26,6 +26,16 @@ def is_own_photo(url: str | None) -> bool:
     return bool(url) and url.startswith(f"{settings.MEDIA_URL.rstrip('/')}/{FOLDER}/")
 
 
+def discard_own_photo(url: str | None) -> None:
+    if is_own_photo(url):
+        storage.discard([url])
+
+
+def like_pattern(term: str) -> str:
+    escaped = term.lower().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    return f"%{escaped}%"
+
+
 class WardrobeService(
     CRUDService[WardrobeItem, WardrobeItemRead, WardrobeItemCreate, WardrobeItemUpdate]
 ):
@@ -39,7 +49,8 @@ class WardrobeService(
 
     async def prepare(self, db, changes, instance=None):
         category_id = changes.get("category_id")
-        if category_id is not None:
+        unchanged = instance is not None and category_id == instance.category_id
+        if category_id is not None and not unchanged:
             category = await categories.get(db, category_id)
             if category is None or not category.is_active:
                 raise UnknownCategory("Choose an existing category")
@@ -63,12 +74,14 @@ class WardrobeService(
         offset: int = 0,
     ) -> Page[WardrobeItemRead]:
         conditions = [WardrobeItem.user_id == user_id]
-        if term and (needle := f"%{term.strip().lower()}%"):
+        if term and (term := term.strip()):
+            needle = like_pattern(term)
             conditions.append(
                 or_(
-                    func.lower(WardrobeItem.name).like(needle),
-                    func.lower(WardrobeItem.color).like(needle),
-                    func.lower(WardrobeItem.note).like(needle),
+                    *(
+                        func.lower(column).like(needle, escape="\\")
+                        for column in (WardrobeItem.name, WardrobeItem.color, WardrobeItem.note)
+                    )
                 )
             )
         if category_id is not None:
@@ -80,8 +93,15 @@ class WardrobeService(
     async def from_product(
         self, db: AsyncSession, user_id: uuid.UUID, product_id: uuid.UUID
     ) -> WardrobeItem:
-        """Add a catalog product to the wardrobe, copying what describes it."""
+        """Add a catalog product to the wardrobe once, copying what describes it."""
         product = await get_product(db, product_id)
+        existing = await db.scalar(
+            select(WardrobeItem).where(
+                WardrobeItem.user_id == user_id, WardrobeItem.product_id == product.id
+            )
+        )
+        if existing is not None:
+            return existing
         item = WardrobeItem(
             user_id=user_id,
             product_id=product.id,
@@ -98,23 +118,24 @@ class WardrobeService(
     ) -> WardrobeItem:
         previous = item.image_url
         item.image_url = await storage.save(file, folder_of(item.user_id))
-        item = await self.save(db, item)
-        if is_own_photo(previous):
-            storage.discard([previous])
+        try:
+            item = await self.save(db, item)
+        except Exception:
+            discard_own_photo(item.image_url)
+            raise
+        discard_own_photo(previous)
         return item
 
     async def remove_photo(self, db: AsyncSession, item: WardrobeItem) -> WardrobeItem:
         previous, item.image_url = item.image_url, None
         item = await self.save(db, item)
-        if is_own_photo(previous):
-            storage.discard([previous])
+        discard_own_photo(previous)
         return item
 
     async def delete(self, db: AsyncSession, instance: WardrobeItem) -> None:
         photo = instance.image_url
         await super().delete(db, instance)
-        if is_own_photo(photo):
-            storage.discard([photo])
+        discard_own_photo(photo)
 
 
 wardrobe = WardrobeService()

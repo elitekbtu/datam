@@ -115,9 +115,16 @@ class WardrobeFlow(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(bought.json()["product_id"], product["id"])
             self.assertEqual(bought.json()["name"], product["name"])
             self.assertEqual(bought.json()["category_id"], product["category"]["id"])
+            again = await owner.post(
+                "/api/wardrobe/from-product", headers=headers, json={"product_id": product["id"]}
+            )
+            self.assertEqual(again.json()["id"], bought.json()["id"])
 
             listing = (await owner.get("/api/wardrobe")).json()
             self.assertEqual(listing["total"], 2)
+            for term in ("   ", "%", "_"):
+                found = (await owner.get("/api/wardrobe", params={"search": term})).json()
+                self.assertEqual(found["total"], 2 if term.isspace() else 0, term)
             filtered = (await owner.get("/api/wardrobe?formality=smart_casual&search=рубаш")).json()
             self.assertEqual([item["id"] for item in filtered["items"]], [shirt["id"]])
 
